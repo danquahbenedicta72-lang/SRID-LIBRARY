@@ -1,0 +1,6 @@
+{
+  "name": "UMaT-SRID Library System",
+  "description": "Customized library management system for UMaT-SRID, providing student registration, attendance tracking, and detailed activity analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
