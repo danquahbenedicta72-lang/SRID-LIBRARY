@@ -70,8 +70,8 @@ const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: 
           id={`nav-${tab.id}`}
           onClick={() => setActiveTab(tab.id)}
           className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${activeTab === tab.id
-            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
-            : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+              : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
             }`}
         >
           <tab.icon className="w-4 h-4" />
@@ -101,7 +101,7 @@ const StudentMode = () => {
     try {
       const res = await fetch('/api/students');
       const students: Student[] = await res.json();
-      const student = students.find(s => s.refNo === refNo);
+      const student = students.find(s => String(s.refNo) === String(refNo));
       if (!student) {
         setError('Reference Number not found. Please register at the desk.');
       } else {
@@ -311,6 +311,7 @@ const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
       });
       if (res.ok) {
         setSuccess(true);
+        onComplete();
       } else {
         const err = await res.json();
         setError(err.error);
@@ -668,8 +669,8 @@ const StudentDetailModal = ({
               }}
               disabled={deletingRef === student.refNo}
               className={`px-4 py-2.5 rounded-xl border border-red-900/30 font-bold text-xs transition-all flex items-center gap-2 ${deletingRef === student.refNo
-                ? 'bg-red-500/10 text-red-400 opacity-50 cursor-not-allowed'
-                : 'text-red-500 hover:bg-red-500/10'
+                  ? 'bg-red-500/10 text-red-400 opacity-50 cursor-not-allowed'
+                  : 'text-red-500 hover:bg-red-500/10'
                 }`}
             >
               {deletingRef === student.refNo ? <Clock className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
@@ -716,7 +717,6 @@ export default function App() {
 
   const [view, setView] = useState<'admin' | 'scan' | 'register'>('admin');
 
-  // Registration state
   const [newStudent, setNewStudent] = useState<Partial<Student>>({
     year: '1',
     programme: 'CE',
@@ -725,13 +725,9 @@ export default function App() {
 
   const fetchData = async () => {
     try {
-      const [stuRes, attRes] = await Promise.all([
-        fetch('/api/students'),
-        fetch('/api/analytics')
-      ]);
-
+      // Fetch students
+      const stuRes = await fetch('/api/students');
       const studentsData = await stuRes.json();
-      const attendanceData = await attRes.json();
 
       if (Array.isArray(studentsData)) {
         setStudents(studentsData);
@@ -740,10 +736,17 @@ export default function App() {
         setStudents([]);
       }
 
-      if (Array.isArray(attendanceData)) {
-        setAttendance(attendanceData);
-      } else {
-        console.error('Attendance data is not an array:', attendanceData);
+      // Fetch attendance (if endpoint exists, otherwise use empty array)
+      try {
+        const attRes = await fetch('/api/attendance');
+        const attendanceData = await attRes.json();
+        if (Array.isArray(attendanceData)) {
+          setAttendance(attendanceData);
+        } else {
+          setAttendance([]);
+        }
+      } catch (attError) {
+        console.log('Attendance endpoint not found, using empty array');
         setAttendance([]);
       }
     } catch (error) {
@@ -946,7 +949,6 @@ export default function App() {
     }} />;
   }
 
-  // Prevent VIEWER from accessing admin area
   if (userRole === 'VIEWER') {
     return <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">Access Denied. Admins only.</div>;
   }
