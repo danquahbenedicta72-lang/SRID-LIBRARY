@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Users, 
-  Clock, 
-  BarChart3, 
-  PlusCircle, 
-  Search, 
-  LogOut, 
-  LogIn, 
-  CheckCircle2, 
+import {
+  Users,
+  Clock,
+  BarChart3,
+  PlusCircle,
+  Search,
+  LogOut,
+  LogIn,
+  CheckCircle2,
   AlertCircle,
   BookOpen,
   Library,
@@ -25,16 +25,16 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
   Cell,
   Legend
 } from 'recharts';
@@ -50,9 +50,9 @@ const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: 
     <div className="flex items-center gap-2">
       <Building2 className="w-6 h-6 text-emerald-500" />
       <div className="flex items-center gap-3">
-        <img 
-          src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png" 
-          alt="UMaT Logo" 
+        <img
+          src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+          alt="UMaT Logo"
           className="w-10 h-10 object-contain"
         />
         <span className="font-bold text-xl tracking-tight">UMaT-SRID <span className="text-emerald-500">LIBRARY</span></span>
@@ -69,11 +69,10 @@ const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: 
           key={tab.id}
           id={`nav-${tab.id}`}
           onClick={() => setActiveTab(tab.id)}
-          className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${
-            activeTab === tab.id 
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' 
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-          }`}
+          className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${activeTab === tab.id
+            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+            : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+            }`}
         >
           <tab.icon className="w-4 h-4" />
           <span className="hidden sm:inline font-medium">{tab.label}</span>
@@ -139,17 +138,17 @@ const StudentMode = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative overflow-hidden"
       >
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-emerald-500"></div>
-        
+
         <div className="flex flex-col items-center text-center mb-8">
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png" 
-            alt="UMaT Logo" 
+          <img
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            alt="UMaT Logo"
             className="w-16 h-16 object-contain mb-4"
           />
           <h1 className="text-2xl font-bold tracking-tight">Kiosk Terminal</h1>
@@ -158,7 +157,7 @@ const StudentMode = () => {
 
         <AnimatePresence mode="wait">
           {step === 'ref' && (
-            <motion.div 
+            <motion.div
               key="step-ref"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -188,7 +187,7 @@ const StudentMode = () => {
           )}
 
           {step === 'action' && (
-            <motion.div 
+            <motion.div
               key="step-action"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -204,18 +203,16 @@ const StudentMode = () => {
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => setAction('Arrive')}
-                  className={`py-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                    action === 'Arrive' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-[#1e1e1e] border-[#2a2a2a] text-zinc-400'
-                  }`}
+                  className={`py-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${action === 'Arrive' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-[#1e1e1e] border-[#2a2a2a] text-zinc-400'
+                    }`}
                 >
                   <LogIn className="w-8 h-8" />
                   <span className="font-bold">Arrive</span>
                 </button>
                 <button
                   onClick={() => setAction('Leave')}
-                  className={`py-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                    action === 'Leave' ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-[#1e1e1e] border-[#2a2a2a] text-zinc-400'
-                  }`}
+                  className={`py-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${action === 'Leave' ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-[#1e1e1e] border-[#2a2a2a] text-zinc-400'
+                    }`}
                 >
                   <LogOut className="w-8 h-8" />
                   <span className="font-bold">Leave</span>
@@ -223,16 +220,16 @@ const StudentMode = () => {
               </div>
 
               {action === 'Arrive' && (
-                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="space-y-2">
-                   <label className="text-xs font-mono text-zinc-500">Book Reference / Purpose</label>
-                   <input
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="space-y-2">
+                  <label className="text-xs font-mono text-zinc-500">Book Reference / Purpose</label>
+                  <input
                     type="text"
                     placeholder="e.g. Reference Calculus Vol 2"
                     value={purpose}
                     onChange={(e) => setPurpose(e.target.value)}
                     className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                   />
-                 </motion.div>
+                  />
+                </motion.div>
               )}
 
               {error && <p className="text-red-500 text-xs text-center flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3" /> {error}</p>}
@@ -256,7 +253,7 @@ const StudentMode = () => {
           )}
 
           {step === 'success' && (
-            <motion.div 
+            <motion.div
               key="step-success"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -329,14 +326,14 @@ const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 text-center space-y-6">
-           <div className="bg-emerald-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
-             <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-           </div>
-           <h2 className="text-2xl font-bold">Registration Complete!</h2>
-           <p className="text-zinc-500">You can now use your Reference Number at the Kiosk Terminal.</p>
-           <button onClick={() => window.location.hash = '#scan'} className="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl">
-             Go to Check-In
-           </button>
+          <div className="bg-emerald-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+          </div>
+          <h2 className="text-2xl font-bold">Registration Complete!</h2>
+          <p className="text-zinc-500">You can now use your Reference Number at the Kiosk Terminal.</p>
+          <button onClick={() => window.location.hash = '#scan'} className="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl">
+            Go to Check-In
+          </button>
         </motion.div>
       </div>
     );
@@ -344,60 +341,60 @@ const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative"
       >
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
         <div className="flex flex-col items-center mb-8">
-           <img 
-             src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png" 
-             alt="UMaT Logo" 
-             className="w-16 h-16 object-contain mb-4"
-           />
-           <h1 className="text-2xl font-bold">Student Membership</h1>
-           <p className="text-zinc-500 text-sm">Register to access library resources</p>
+          <img
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            alt="UMaT Logo"
+            className="w-16 h-16 object-contain mb-4"
+          />
+          <h1 className="text-2xl font-bold">Student Membership</h1>
+          <p className="text-zinc-500 text-sm">Register to access library resources</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-             <label className="text-xs font-mono uppercase text-zinc-500">Reference Number</label>
-             <input required type="text" maxLength={10} placeholder="10 Digits" value={formData.refNo || ''} onChange={e => setFormData({...formData, refNo: e.target.value.replace(/\D/g, '')})} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none font-mono" />
+            <label className="text-xs font-mono uppercase text-zinc-500">Reference Number</label>
+            <input required type="text" maxLength={10} placeholder="10 Digits" value={formData.refNo || ''} onChange={e => setFormData({ ...formData, refNo: e.target.value.replace(/\D/g, '') })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none font-mono" />
           </div>
           <div className="space-y-1">
-             <label className="text-xs font-mono uppercase text-zinc-500">Full Name</label>
-             <input required type="text" placeholder="Your Name" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none" />
+            <label className="text-xs font-mono uppercase text-zinc-500">Full Name</label>
+            <input required type="text" placeholder="Your Name" value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-               <label className="text-xs font-mono uppercase text-zinc-500">Year</label>
-               <select value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none">
-                 {YEARS.map(y => <option key={y} value={y}>Year {y}</option>)}
-               </select>
+              <label className="text-xs font-mono uppercase text-zinc-500">Year</label>
+              <select value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none">
+                {YEARS.map(y => <option key={y} value={y}>Year {y}</option>)}
+              </select>
             </div>
             <div className="space-y-1">
-               <label className="text-xs font-mono uppercase text-zinc-500">Programme</label>
-               <select value={formData.programme} onChange={e => setFormData({...formData, programme: e.target.value})} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none">
-                 {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
-               </select>
+              <label className="text-xs font-mono uppercase text-zinc-500">Programme</label>
+              <select value={formData.programme} onChange={e => setFormData({ ...formData, programme: e.target.value })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none">
+                {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
             </div>
           </div>
           <div className="space-y-1">
-             <label className="text-xs font-mono uppercase text-zinc-500">Hall / Hostel</label>
-             <select value={formData.hall} onChange={e => setFormData({...formData, hall: e.target.value})} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none">
-                {HALLS.map(h => <option key={h} value={h}>{h}</option>)}
-             </select>
+            <label className="text-xs font-mono uppercase text-zinc-500">Hall / Hostel</label>
+            <select value={formData.hall} onChange={e => setFormData({ ...formData, hall: e.target.value })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none">
+              {HALLS.map(h => <option key={h} value={h}>{h}</option>)}
+            </select>
           </div>
           <div className="space-y-1">
-             <label className="text-xs font-mono uppercase text-zinc-500">Contact Number</label>
-             <input required type="text" placeholder="Phone Number" value={formData.contact || ''} onChange={e => setFormData({...formData, contact: e.target.value})} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none" />
+            <label className="text-xs font-mono uppercase text-zinc-500">Contact Number</label>
+            <input required type="text" placeholder="Phone Number" value={formData.contact || ''} onChange={e => setFormData({ ...formData, contact: e.target.value })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 outline-none" />
           </div>
 
           {error && <p className="text-red-500 text-xs text-center flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3" /> {error}</p>}
 
           <button disabled={loading} type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all disabled:opacity-50">
-             {loading ? 'Registering...' : 'Complete Registration'}
+            {loading ? 'Registering...' : 'Complete Registration'}
           </button>
         </form>
       </motion.div>
@@ -429,50 +426,50 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole) => void }) => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative"
       >
         <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
         <div className="flex flex-col items-center mb-8">
-           <img 
-             src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png" 
-             alt="UMaT Logo" 
-             className="w-20 h-20 object-contain mb-4 mx-auto"
-           />
-           <h1 className="text-2xl font-bold">UMaT-SRID Admin</h1>
-           <p className="text-zinc-500 text-sm">Library Management System</p>
+          <img
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            alt="UMaT Logo"
+            className="w-20 h-20 object-contain mb-4 mx-auto"
+          />
+          <h1 className="text-2xl font-bold">UMaT-SRID Admin</h1>
+          <p className="text-zinc-500 text-sm">Library Management System</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-             <label className="text-xs font-mono uppercase text-zinc-500">Username</label>
-             <input 
-              required 
-              type="text" 
-              value={username} 
+            <label className="text-xs font-mono uppercase text-zinc-500">Username</label>
+            <input
+              required
+              type="text"
+              value={username}
               onChange={e => setUsername(e.target.value)}
-              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-emerald-500 outline-none" 
+              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
           <div className="space-y-1">
-             <label className="text-xs font-mono uppercase text-zinc-500">Password</label>
-             <input 
-              required 
-              type="password" 
-              value={password} 
+            <label className="text-xs font-mono uppercase text-zinc-500">Password</label>
+            <input
+              required
+              type="password"
+              value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-emerald-500 outline-none" 
+              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
 
           {error && <p className="text-red-500 text-xs text-center flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3" /> {error}</p>}
 
           <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all">
-             Unlock Dashboard
+            Unlock Dashboard
           </button>
-          
+
           <div className="text-center">
             <button type="button" onClick={() => alert('Please contact the System Administrator to reset your password.')} className="text-zinc-600 hover:text-emerald-500 text-xs transition-colors">
               Forgot Password?
@@ -484,226 +481,224 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole) => void }) => {
   );
 }
 
-const StudentDetailModal = ({ 
-  student, 
-  attendance, 
-  onClose, 
-  onUpdate, 
+const StudentDetailModal = ({
+  student,
+  attendance,
+  onClose,
+  onUpdate,
   onDelete,
   onDrop,
   deletingRef,
   userRole
-}: { 
-  student: Student, 
-  attendance: AttendanceRecord[], 
-  onClose: () => void, 
+}: {
+  student: Student,
+  attendance: AttendanceRecord[],
+  onClose: () => void,
   onUpdate: (data: Partial<Student>) => void,
   onDelete: (refNo: string) => void,
   onDrop: (refNo: string) => void,
   deletingRef: string | null,
   userRole: UserRole | null
 }) => {
-   const [editData, setEditData] = useState<Student>(student);
-   const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<Student>(student);
+  const [isEditing, setIsEditing] = useState(false);
 
-   const history = attendance.filter(a => a.studentRef === student.refNo).sort((a,b) => b.date.localeCompare(a.date));
+  const history = attendance.filter(a => a.studentRef === student.refNo).sort((a, b) => b.date.localeCompare(a.date));
 
-   return (
-     <motion.div 
-       initial={{ opacity: 0 }} 
-       animate={{ opacity: 1 }} 
-       className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-     >
-       <motion.div 
-         initial={{ scale: 0.9, y: 20 }}
-         animate={{ scale: 1, y: 0 }}
-         className="w-full max-w-2xl bg-[#141414] border border-[#2a2a2a] rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
-       >
-         <div className="p-6 border-b border-[#2a2a2a] flex justify-between items-center bg-[#1a1a1a]">
-           <div className="flex items-center gap-4">
-              <div className="bg-emerald-500/10 p-3 rounded-2xl">
-                <Users className="w-6 h-6 text-emerald-500" />
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        className="w-full max-w-2xl bg-[#141414] border border-[#2a2a2a] rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+      >
+        <div className="p-6 border-b border-[#2a2a2a] flex justify-between items-center bg-[#1a1a1a]">
+          <div className="flex items-center gap-4">
+            <div className="bg-emerald-500/10 p-3 rounded-2xl">
+              <Users className="w-6 h-6 text-emerald-500" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-white leading-tight">{isEditing ? 'Edit Profile' : student.name}</h2>
+                {!isEditing && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${student.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                    }`}>
+                    {student.status}
+                  </span>
+                )}
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-white leading-tight">{isEditing ? 'Edit Profile' : student.name}</h2>
-                    {!isEditing && (
-                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                          student.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                       }`}>
-                          {student.status}
-                       </span>
-                    )}
-                 </div>
-                <p className="text-xs font-mono text-emerald-500 uppercase">{student.refNo}</p>
-              </div>
-           </div>
-           <button onClick={onClose} className="text-zinc-500 hover:text-white p-2 transition-colors">
-              <X className="w-6 h-6" />
-           </button>
-         </div>
+              <p className="text-xs font-mono text-emerald-500 uppercase">{student.refNo}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-white p-2 transition-colors">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
 
-         <div className="flex-1 overflow-y-auto p-6 space-y-8">
-            <section className="space-y-4">
-               <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-mono uppercase text-zinc-500 tracking-widest">Personal Details</h3>
-                  {(userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') && (
-                    <button 
-                      onClick={() => setIsEditing(!isEditing)} 
-                      className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-1.5 px-3 rounded-lg transition-all"
-                    >
-                      {isEditing ? 'Cancel Edit' : 'Edit Info'}
-                    </button>
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          <section className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xs font-mono uppercase text-zinc-500 tracking-widest">Personal Details</h3>
+              {(userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') && (
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 py-1.5 px-3 rounded-lg transition-all"
+                >
+                  {isEditing ? 'Cancel Edit' : 'Edit Info'}
+                </button>
+              )}
+            </div>
+
+            {isEditing ? (
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase text-zinc-600">Full Name</label>
+                  <input
+                    type="text"
+                    value={editData.name}
+                    onChange={e => setEditData({ ...editData, name: e.target.value })}
+                    className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-2 px-3 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase text-zinc-600">Contact</label>
+                  <input
+                    type="text"
+                    value={editData.contact}
+                    onChange={e => setEditData({ ...editData, contact: e.target.value })}
+                    className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-2 px-3 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase text-zinc-600">Year</label>
+                  <select
+                    value={editData.year}
+                    onChange={e => setEditData({ ...editData, year: e.target.value })}
+                    className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-2 px-3 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                  >
+                    {YEARS.map(y => <option key={y} value={y}>Year {y}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase text-zinc-600">Programme</label>
+                  <select
+                    value={editData.programme}
+                    onChange={e => setEditData({ ...editData, programme: e.target.value })}
+                    className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-2 px-3 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                  >
+                    {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div className="md:col-span-2 flex justify-end">
+                  <button
+                    onClick={() => {
+                      onUpdate(editData);
+                      setIsEditing(false);
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20"
+                  >
+                    Update Profile
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: 'Programme', value: student.programme, icon: BookOpen },
+                  { label: 'Year', value: `Year ${student.year}`, icon: GraduationCap },
+                  { label: 'Hall', value: student.hall, icon: Building2 },
+                  { label: 'Contact', value: student.contact, icon: Phone },
+                ].map((item, i) => (
+                  <div key={i} className="bg-[#1e1e1e] border border-[#2a2a2a] p-3 rounded-2xl">
+                    <item.icon className="w-4 h-4 text-zinc-600 mb-2" />
+                    <p className="text-[10px] uppercase text-zinc-600 mb-0.5">{item.label}</p>
+                    <p className="text-sm font-medium text-white">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xs font-mono uppercase text-zinc-500 tracking-widest">Attendance History</h3>
+            </div>
+            <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-2xl overflow-hidden overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
+                  <tr>
+                    <th className="py-2 px-4 whitespace-nowrap">Date</th>
+                    <th className="py-2 px-4 whitespace-nowrap">Time In</th>
+                    <th className="py-2 px-4 whitespace-nowrap" >Time Out</th>
+                    <th className="py-2 px-4 whitespace-nowrap">Purpose</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#2a2a2a]">
+                  {history.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-zinc-600 italic">No attendance records found.</td>
+                    </tr>
+                  ) : (
+                    history.slice(0, 10).map(h => (
+                      <tr key={h.id} className="hover:bg-zinc-800/50 transition-colors">
+                        <td className="py-3 px-4 text-zinc-400 font-mono text-xs whitespace-nowrap">{h.date}</td>
+                        <td className="py-3 px-4 text-white whitespace-nowrap">{format(new Date(h.checkIn), 'HH:mm')}</td>
+                        <td className="py-3 px-4 text-zinc-500 whitespace-nowrap">{h.checkOut ? format(new Date(h.checkOut), 'HH:mm') : '--:--'}</td>
+                        <td className="py-3 px-4 text-zinc-400 text-xs italic">{h.purpose || '-'}</td>
+                      </tr>
+                    ))
                   )}
-               </div>
-               
-               {isEditing ? (
-                 <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                       <label className="text-[10px] uppercase text-zinc-600">Full Name</label>
-                       <input 
-                         type="text" 
-                         value={editData.name} 
-                         onChange={e => setEditData({...editData, name: e.target.value})}
-                         className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-2 px-3 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                       />
-                    </div>
-                    <div className="space-y-1">
-                       <label className="text-[10px] uppercase text-zinc-600">Contact</label>
-                       <input 
-                         type="text" 
-                         value={editData.contact} 
-                         onChange={e => setEditData({...editData, contact: e.target.value})}
-                         className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-2 px-3 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                       />
-                    </div>
-                    <div className="space-y-1">
-                       <label className="text-[10px] uppercase text-zinc-600">Year</label>
-                       <select 
-                         value={editData.year} 
-                         onChange={e => setEditData({...editData, year: e.target.value})}
-                         className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-2 px-3 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                       >
-                         {YEARS.map(y => <option key={y} value={y}>Year {y}</option>)}
-                       </select>
-                    </div>
-                    <div className="space-y-1">
-                       <label className="text-[10px] uppercase text-zinc-600">Programme</label>
-                       <select 
-                         value={editData.programme} 
-                         onChange={e => setEditData({...editData, programme: e.target.value})}
-                         className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-2 px-3 text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
-                       >
-                         {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
-                       </select>
-                    </div>
-                    <div className="md:col-span-2 flex justify-end">
-                       <button 
-                         onClick={() => {
-                           onUpdate(editData);
-                           setIsEditing(false);
-                         }}
-                         className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20"
-                       >
-                         Update Profile
-                       </button>
-                    </div>
-                 </div>
-               ) : (
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { label: 'Programme', value: student.programme, icon: BookOpen },
-                      { label: 'Year', value: `Year ${student.year}`, icon: GraduationCap },
-                      { label: 'Hall', value: student.hall, icon: Building2 },
-                      { label: 'Contact', value: student.contact, icon: Phone },
-                    ].map((item, i) => (
-                      <div key={i} className="bg-[#1e1e1e] border border-[#2a2a2a] p-3 rounded-2xl">
-                        <item.icon className="w-4 h-4 text-zinc-600 mb-2" />
-                        <p className="text-[10px] uppercase text-zinc-600 mb-0.5">{item.label}</p>
-                        <p className="text-sm font-medium text-white">{item.value}</p>
-                      </div>
-                    ))}
-                 </div>
-               )}
-            </section>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
 
-            <section className="space-y-4">
-               <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-mono uppercase text-zinc-500 tracking-widest">Attendance History</h3>
-               </div>
-               <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-2xl overflow-hidden overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                     <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
-                        <tr>
-                           <th className="py-2 px-4 whitespace-nowrap">Date</th>
-                           <th className="py-2 px-4 whitespace-nowrap">Time In</th>
-                           <th className="py-2 px-4 whitespace-nowrap" >Time Out</th>
-                           <th className="py-2 px-4 whitespace-nowrap">Purpose</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-[#2a2a2a]">
-                        {history.length === 0 ? (
-                           <tr>
-                              <td colSpan={4} className="py-8 text-center text-zinc-600 italic">No attendance records found.</td>
-                           </tr>
-                        ) : (
-                           history.slice(0, 10).map(h => (
-                             <tr key={h.id} className="hover:bg-zinc-800/50 transition-colors">
-                               <td className="py-3 px-4 text-zinc-400 font-mono text-xs whitespace-nowrap">{h.date}</td>
-                               <td className="py-3 px-4 text-white whitespace-nowrap">{format(new Date(h.checkIn), 'HH:mm')}</td>
-                               <td className="py-3 px-4 text-zinc-500 whitespace-nowrap">{h.checkOut ? format(new Date(h.checkOut), 'HH:mm') : '--:--'}</td>
-                               <td className="py-3 px-4 text-zinc-400 text-xs italic">{h.purpose || '-'}</td>
-                             </tr>
-                           ))
-                        )}
-                     </tbody>
-                  </table>
-               </div>
-            </section>
-         </div>
-
-         <div className="p-4 bg-[#1a1a1a] border-t border-[#2a2a2a] flex justify-between gap-4">
-            {userRole === 'SUPER_ADMIN' && (
-              <button 
-                onClick={() => {
-                  if(window.confirm('IRREVERSIBLE: Delete this student and all history from the entire system?')) {
-                    onDelete(student.refNo);
-                  }
-                }}
-                disabled={deletingRef === student.refNo}
-                className={`px-4 py-2.5 rounded-xl border border-red-900/30 font-bold text-xs transition-all flex items-center gap-2 ${
-                  deletingRef === student.refNo 
-                    ? 'bg-red-500/10 text-red-400 opacity-50 cursor-not-allowed' 
-                    : 'text-red-500 hover:bg-red-500/10'
+        <div className="p-4 bg-[#1a1a1a] border-t border-[#2a2a2a] flex justify-between gap-4">
+          {userRole === 'SUPER_ADMIN' && (
+            <button
+              onClick={() => {
+                if (window.confirm('IRREVERSIBLE: Delete this student and all history from the entire system?')) {
+                  onDelete(student.refNo);
+                }
+              }}
+              disabled={deletingRef === student.refNo}
+              className={`px-4 py-2.5 rounded-xl border border-red-900/30 font-bold text-xs transition-all flex items-center gap-2 ${deletingRef === student.refNo
+                ? 'bg-red-500/10 text-red-400 opacity-50 cursor-not-allowed'
+                : 'text-red-500 hover:bg-red-500/10'
                 }`}
-              >
-                {deletingRef === student.refNo ? <Clock className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-                Delete Permanently
-              </button>
-            )}
-            
-            {(userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') && student.status === 'ACTIVE' && (
-              <button 
-                onClick={() => {
-                  if(window.confirm(`Drop ${student.name}'s status? (Marks as no longer schooling)`)) {
-                    onDrop(student.refNo);
-                  }
-                }}
-                className="px-4 py-2.5 rounded-xl border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition-all font-bold text-xs flex items-center gap-2"
-              >
-                <LogOut className="w-3 h-3" /> Drop Record
-              </button>
-            )}
-            <button 
-              onClick={onClose}
-              className="px-8 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all font-bold text-sm"
             >
-              Close
+              {deletingRef === student.refNo ? <Clock className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+              Delete Permanently
             </button>
-         </div>
-       </motion.div>
-     </motion.div>
-   )
+          )}
+
+          {(userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') && student.status === 'ACTIVE' && (
+            <button
+              onClick={() => {
+                if (window.confirm(`Drop ${student.name}'s status? (Marks as no longer schooling)`)) {
+                  onDrop(student.refNo);
+                }
+              }}
+              className="px-4 py-2.5 rounded-xl border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition-all font-bold text-xs flex items-center gap-2"
+            >
+              <LogOut className="w-3 h-3" /> Drop Record
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="px-8 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl transition-all font-bold text-sm"
+          >
+            Close
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
 }
 
 export default function App() {
@@ -718,7 +713,7 @@ export default function App() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [deletingRef, setDeletingRef] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [view, setView] = useState<'admin' | 'scan' | 'register'>('admin');
 
   // Registration state
@@ -734,7 +729,7 @@ export default function App() {
         fetch('/api/students'),
         fetch('/api/analytics')
       ]);
-      
+
       const studentsData = await stuRes.json();
       const attendanceData = await attRes.json();
 
@@ -761,10 +756,11 @@ export default function App() {
   useEffect(() => {
     fetchData();
     const updateView = () => {
-       const hash = window.location.hash;
-       if (hash === '#scan') setView('scan');
-       else if (hash === '#register') setView('register');
-       else setView('admin');
+      const hash = window.location.hash;
+      if (hash === '#scan') setView('scan');
+      else if (hash === '#register') setView('register');
+      else if (hash === '#admin') setView('admin');
+      else setView('scan');
     }
     updateView();
     window.addEventListener('hashchange', updateView);
@@ -901,8 +897,6 @@ export default function App() {
       skipEmptyLines: true,
       complete: async (results) => {
         const rawData = results.data as any[];
-        // Map CSV headers to Student interface
-        // Expected headers: refNo, name, year, programme, contact, hall
         const importedStudents: Student[] = rawData.map(row => ({
           refNo: row.refNo || row['Ref No'] || row['Reference Number'],
           name: row.name || row['Name'] || row['Full Name'],
@@ -934,20 +928,27 @@ export default function App() {
         } catch (err) {
           showMsg('Network error during import', 'error');
         }
-        
-        // Reset file input
+
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
     });
   };
 
+  // STUDENT ROUTES — No login required
   if (view === 'scan') return <StudentMode />;
-  if (!isAuthenticated) return <LoginMode onLogin={(role) => { setIsAuthenticated(true); setUserRole(role); }} />;
-  if (view === 'register') {
-    if (userRole === 'VIEWER') {
-      return <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">Permission Denied</div>;
-    }
-    return <RegistrationMode onComplete={() => fetchData()} />;
+  if (view === 'register') return <RegistrationMode onComplete={() => fetchData()} />;
+
+  // ADMIN ROUTES — Require authentication
+  if (!isAuthenticated) {
+    return <LoginMode onLogin={(role) => {
+      setIsAuthenticated(true);
+      setUserRole(role);
+    }} />;
+  }
+
+  // Prevent VIEWER from accessing admin area
+  if (userRole === 'VIEWER') {
+    return <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">Access Denied. Admins only.</div>;
   }
 
   // Analytics Helpers
@@ -967,24 +968,15 @@ export default function App() {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   };
 
-  const getHallData = () => {
-    const counts: Record<string, number> = {};
-    (attendance || []).forEach(a => {
-      if (a.hall) counts[a.hall] = (counts[a.hall] || 0) + 1;
-    });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  };
-
   const getTrendData = () => {
     const counts: Record<string, number> = {};
-    // Last 7 days
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       counts[dateStr] = 0;
     }
-    
+
     (attendance || []).forEach(a => {
       if (counts[a.date] !== undefined) {
         counts[a.date]++;
@@ -1004,7 +996,7 @@ export default function App() {
       counts[purpose] = (counts[purpose] || 0) + 1;
     });
     return Object.entries(counts)
-      .sort((a,b) => b[1] - a[1])
+      .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([name, value]) => ({ name, value }));
   };
@@ -1015,8 +1007,8 @@ export default function App() {
 
     return (students || []).filter(student => {
       const studentAttendance = (attendance || []).filter(a => a.studentRef === student.refNo);
-      if (studentAttendance.length === 0) return true; // Never visited
-      
+      if (studentAttendance.length === 0) return true;
+
       const lastVisit = new Date(Math.max(...studentAttendance.map(a => new Date(a.date).getTime())));
       return lastVisit < threeMonthsAgo;
     });
@@ -1039,9 +1031,8 @@ export default function App() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`fixed top-20 right-4 z-50 p-4 rounded-xl flex items-center gap-3 shadow-2xl border ${
-                message.type === 'success' ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800' : 'bg-red-950/80 text-red-400 border-red-800'
-              } backdrop-blur-md`}
+              className={`fixed top-20 right-4 z-50 p-4 rounded-xl flex items-center gap-3 shadow-2xl border ${message.type === 'success' ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800' : 'bg-red-950/80 text-red-400 border-red-800'
+                } backdrop-blur-md`}
             >
               {message.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
               <span className="font-medium text-sm">{message.text}</span>
@@ -1077,7 +1068,7 @@ export default function App() {
                     {students.filter(s => s.refNo.toLowerCase().includes(searchTerm.toLowerCase())).map(student => {
                       const today = new Date().toISOString().split('T')[0];
                       const activeSession = attendance.find(a => a.studentRef === student.refNo && a.date === today && !a.checkOut);
-                      
+
                       return (
                         <div key={student.refNo} className="bg-[#1e1e1e] border border-[#2a2a2a] p-4 rounded-xl">
                           <div className="flex justify-between items-start mb-2">
@@ -1093,9 +1084,9 @@ export default function App() {
                           <div className="flex gap-2">
                             {!activeSession ? (
                               <div className="w-full space-y-2">
-                                <input 
-                                  type="text" 
-                                  placeholder="Book / Purpose" 
+                                <input
+                                  type="text"
+                                  placeholder="Book / Purpose"
                                   value={purpose}
                                   onChange={(e) => setPurpose(e.target.value)}
                                   className="w-full bg-[#141414] border border-[#2a2a2a] rounded-lg py-2 px-3 text-xs outline-none focus:ring-1 focus:ring-emerald-500"
@@ -1123,7 +1114,7 @@ export default function App() {
                       <div className="text-center py-8">
                         <Users className="w-12 h-12 text-zinc-700 mx-auto mb-2" />
                         <p className="text-zinc-500 text-sm">No student found matching "{searchTerm}"</p>
-                        <button 
+                        <button
                           onClick={() => setActiveTab('students')}
                           className="mt-4 text-emerald-500 hover:underline text-sm font-medium"
                         >
@@ -1143,10 +1134,10 @@ export default function App() {
                     <Clock className="w-5 h-5 text-blue-500" />
                     Live Activity
                   </h2>
-                  <button 
+                  <button
                     onClick={() => {
                       const csvHeader = "Student,Ref No,Book/Purpose,Time In,Time Out,Date\n";
-                      const csvRows = (attendance || []).map(a => 
+                      const csvRows = (attendance || []).map(a =>
                         `"${a.name}","${a.studentRef}","${a.purpose || 'General Study'}","${a.checkIn}","${a.checkOut || ''}","${a.date}"`
                       ).join("\n");
                       const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
@@ -1187,10 +1178,10 @@ export default function App() {
                             </div>
                           </td>
                           <td className="py-4 px-4">
-                             <div className="flex items-center gap-2">
-                               <BookOpen className="w-3 h-3 text-zinc-600" />
-                               <span className="text-zinc-300 italic text-xs">{record.purpose || 'General Study'}</span>
-                             </div>
+                            <div className="flex items-center gap-2">
+                              <BookOpen className="w-3 h-3 text-zinc-600" />
+                              <span className="text-zinc-300 italic text-xs">{record.purpose || 'General Study'}</span>
+                            </div>
                           </td>
                           <td className="py-4 px-4 text-zinc-400">{format(new Date(record.checkIn), 'HH:mm:ss')}</td>
                           <td className="py-4 px-4 text-zinc-400">
@@ -1198,14 +1189,14 @@ export default function App() {
                           </td>
                           <td className="py-4 px-4">
                             {record.checkOut ? (
-                               <span className="flex items-center gap-1.5 text-zinc-500 text-xs">
-                                 <LogOut className="w-3 h-3" /> Exited
-                               </span>
+                              <span className="flex items-center gap-1.5 text-zinc-500 text-xs">
+                                <LogOut className="w-3 h-3" /> Exited
+                              </span>
                             ) : (
-                               <span className="flex items-center gap-1.5 text-emerald-500 text-xs font-bold animate-pulse">
-                                 <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                                 Inside
-                               </span>
+                              <span className="flex items-center gap-1.5 text-emerald-500 text-xs font-bold animate-pulse">
+                                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                                Inside
+                              </span>
                             )}
                           </td>
                         </tr>
@@ -1238,7 +1229,7 @@ export default function App() {
                       type="text"
                       maxLength={10}
                       value={newStudent.refNo || ''}
-                      onChange={e => setNewStudent({...newStudent, refNo: e.target.value.replace(/\D/g, '')})}
+                      onChange={e => setNewStudent({ ...newStudent, refNo: e.target.value.replace(/\D/g, '') })}
                       placeholder="e.g. 9012593422"
                       className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white font-mono"
                     />
@@ -1251,7 +1242,7 @@ export default function App() {
                         required
                         type="text"
                         value={newStudent.name || ''}
-                        onChange={e => setNewStudent({...newStudent, name: e.target.value})}
+                        onChange={e => setNewStudent({ ...newStudent, name: e.target.value })}
                         placeholder="e.g. Samuel Adjetey"
                         className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
                       />
@@ -1264,7 +1255,7 @@ export default function App() {
                         <GraduationCap className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
                         <select
                           value={newStudent.year}
-                          onChange={e => setNewStudent({...newStudent, year: e.target.value})}
+                          onChange={e => setNewStudent({ ...newStudent, year: e.target.value })}
                           className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
                         >
                           {YEARS.map(y => <option key={y} value={y}>Year {y}</option>)}
@@ -1273,13 +1264,13 @@ export default function App() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-mono uppercase text-zinc-500">Programme</label>
-                       <select
-                          value={newStudent.programme}
-                          onChange={e => setNewStudent({...newStudent, programme: e.target.value})}
-                          className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
-                        >
-                          {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
+                      <select
+                        value={newStudent.programme}
+                        onChange={e => setNewStudent({ ...newStudent, programme: e.target.value })}
+                        className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
+                      >
+                        {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
                     </div>
                   </div>
                   <div className="space-y-1">
@@ -1290,7 +1281,7 @@ export default function App() {
                         required
                         type="text"
                         value={newStudent.contact || ''}
-                        onChange={e => setNewStudent({...newStudent, contact: e.target.value})}
+                        onChange={e => setNewStudent({ ...newStudent, contact: e.target.value })}
                         placeholder="e.g. 0244001122"
                         className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
                       />
@@ -1302,10 +1293,10 @@ export default function App() {
                       <Building2 className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
                       <select
                         value={newStudent.hall}
-                        onChange={e => setNewStudent({...newStudent, hall: e.target.value})}
+                        onChange={e => setNewStudent({ ...newStudent, hall: e.target.value })}
                         className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
                       >
-                         {HALLS.map(h => <option key={h} value={h}>{h}</option>)}
+                        {HALLS.map(h => <option key={h} value={h}>{h}</option>)}
                       </select>
                     </div>
                   </div>
@@ -1319,40 +1310,39 @@ export default function App() {
               </div>
             </div>
 
-          <div className="md:col-span-3 space-y-6">
+            <div className="md:col-span-3 space-y-6">
               <div className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl">
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-4">
-                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Users className="w-5 h-5 text-blue-500" />
-                        Student Database
-                      </h2>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleImport} 
-                        hidden 
-                        accept=".csv" 
-                      />
-                      <button 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
-                      >
-                        <Upload className="w-3 h-3" /> Import CSV
-                      </button>
-                      <span className="text-xs font-mono text-zinc-600">{students.length} Registered</span>
-                    </div>
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      <Users className="w-5 h-5 text-blue-500" />
+                      Student Database
+                    </h2>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImport}
+                      hidden
+                      accept=".csv"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+                    >
+                      <Upload className="w-3 h-3" /> Import CSV
+                    </button>
+                    <span className="text-xs font-mono text-zinc-600">{students.length} Registered</span>
+                  </div>
+                </div>
 
-                {/* Database Search & Structure */}
                 <div className="mb-6 flex flex-wrap gap-4">
                   <div className="flex-1 min-w-[200px] relative">
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
-                    <input 
-                      type="text" 
-                      placeholder="Search name, ref no, programme..." 
+                    <input
+                      type="text"
+                      placeholder="Search name, ref no, programme..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 text-sm outline-none focus:ring-1 focus:ring-emerald-500"
@@ -1364,7 +1354,7 @@ export default function App() {
                   {PROGRAMMES.map(prog => {
                     const progStudents = students.filter(s => s.programme === prog);
                     if (progStudents.length === 0 && !searchTerm) return null;
-                    
+
                     const filteredProgStudents = progStudents.filter(s => {
                       const query = searchTerm.toLowerCase();
                       return s.name.toLowerCase().includes(query) || s.refNo.toLowerCase().includes(query);
@@ -1379,7 +1369,7 @@ export default function App() {
                           <h3 className="text-sm font-bold text-white">{prog} Department</h3>
                           <span className="text-[10px] text-zinc-500 font-mono ml-auto">{filteredProgStudents.length} Students</span>
                         </div>
-                        
+
                         <div className="pl-4 space-y-4">
                           {YEARS.map(year => {
                             const yearStudents = filteredProgStudents.filter(s => s.year === year);
@@ -1392,8 +1382,8 @@ export default function App() {
                                   <table className="w-full text-left">
                                     <tbody className="text-sm divide-y divide-[#2a2a2a]">
                                       {yearStudents.map(s => (
-                                        <tr 
-                                          key={s.refNo} 
+                                        <tr
+                                          key={s.refNo}
                                           onClick={() => setSelectedStudent(s)}
                                           className={`hover:bg-zinc-800/30 transition-colors group cursor-pointer ${deletingRef === s.refNo ? 'opacity-50 pointer-events-none' : ''}`}
                                         >
@@ -1401,31 +1391,30 @@ export default function App() {
                                           <td className="py-2.5 px-4 text-white font-medium">{s.name}</td>
                                           <td className="py-2.5 px-4 hidden md:table-cell text-zinc-500">{s.hall}</td>
                                           <td className="py-2.5 px-4 w-24">
-                                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                                              s.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                                            }`}>
+                                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${s.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                                              }`}>
                                               {s.status}
                                             </span>
                                           </td>
                                           <td className="py-2.5 px-4 text-right w-16">
-                                              {userRole === 'SUPER_ADMIN' && (
-                                                <button 
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (window.confirm('IRREVERSIBLE: Delete student and their attendance history permanently?')) deleteStudent(s.refNo);
-                                                  }}
-                                                  className={`${deletingRef === s.refNo ? 'text-zinc-700 animate-pulse' : 'text-zinc-600 hover:text-red-500'} transition-colors p-1`}
-                                                  title="Delete Student Permanently"
-                                                  disabled={deletingRef === s.refNo}
-                                                >
-                                                  {deletingRef === s.refNo ? (
-                                                    <Clock className="w-3 h-3 animate-spin" />
-                                                  ) : (
-                                                    <Trash2 className="w-3 h-3" />
-                                                  )}
-                                                </button>
-                                              )}
-                                           </td>
+                                            {userRole === 'SUPER_ADMIN' && (
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  if (window.confirm('IRREVERSIBLE: Delete student and their attendance history permanently?')) deleteStudent(s.refNo);
+                                                }}
+                                                className={`${deletingRef === s.refNo ? 'text-zinc-700 animate-pulse' : 'text-zinc-600 hover:text-red-500'} transition-colors p-1`}
+                                                title="Delete Student Permanently"
+                                                disabled={deletingRef === s.refNo}
+                                              >
+                                                {deletingRef === s.refNo ? (
+                                                  <Clock className="w-3 h-3 animate-spin" />
+                                                ) : (
+                                                  <Trash2 className="w-3 h-3" />
+                                                )}
+                                              </button>
+                                            )}
+                                          </td>
                                         </tr>
                                       ))}
                                     </tbody>
@@ -1438,7 +1427,7 @@ export default function App() {
                       </div>
                     );
                   })}
-                  
+
                   {students.length === 0 && (
                     <div className="text-center py-20 bg-[#1e1e1e] rounded-3xl border border-dashed border-[#2a2a2a]">
                       <Users className="w-16 h-16 text-zinc-800 mx-auto mb-4" />
@@ -1464,14 +1453,14 @@ export default function App() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Self-Check Terminal</h2>
               <p className="text-zinc-500 text-sm mb-8">Scan to Arrive or Leave without Librarian assistance</p>
-              
+
               <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
-                 <QRCodeSVG value={scanUrl} size={250} level="H" />
+                <QRCodeSVG value={scanUrl} size={250} level="H" />
               </div>
 
               <div className="flex flex-col gap-2 w-full">
-                <a 
-                  href={scanUrl} 
+                <a
+                  href={scanUrl}
                   target="_blank"
                   className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl transition-all font-bold"
                 >
@@ -1487,14 +1476,14 @@ export default function App() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Student Registration</h2>
               <p className="text-zinc-500 text-sm mb-8">Scan to register as a new library member</p>
-              
+
               <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
-                 <QRCodeSVG value={registerUrl} size={250} level="H" />
+                <QRCodeSVG value={registerUrl} size={250} level="H" />
               </div>
 
               <div className="flex flex-col gap-2 w-full">
-                <a 
-                  href={registerUrl} 
+                <a
+                  href={registerUrl}
                   target="_blank"
                   className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all font-bold"
                 >
@@ -1517,7 +1506,7 @@ export default function App() {
             className="space-y-8"
           >
             {getInactiveStudents().length > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex items-start gap-4"
@@ -1528,11 +1517,11 @@ export default function App() {
                 <div className="flex-1">
                   <h4 className="text-amber-500 font-bold text-sm">System Alerts</h4>
                   <p className="text-zinc-400 text-xs mt-0.5">
-                    {getInactiveStudents().length} student(s) have been inactive for over 3 months. 
+                    {getInactiveStudents().length} student(s) have been inactive for over 3 months.
                     Consider reviewing their status in the directory.
                   </p>
                 </div>
-                <button 
+                <button
                   onClick={() => { setActiveTab('students'); setSearchTerm('Inactive'); }}
                   className="text-xs font-bold text-amber-500 hover:bg-amber-500/10 px-3 py-1.5 rounded-lg transition-all"
                 >
@@ -1542,30 +1531,30 @@ export default function App() {
             )}
 
             <div className="flex justify-between items-center">
-               <h2 className="text-2xl font-bold text-white">System Analytics</h2>
-               <button 
-                 onClick={() => {
-                   const csvHeader = "Metric,Value\n";
-                   const csvRows = [
-                     `Total Visits,${(attendance || []).length}`,
-                     `In-Library Now,${(attendance || []).filter(a => !a.checkOut).length}`,
-                     `Database Size,${(students || []).length}`,
-                     "\nDetailed Attendance\n",
-                     "Student,Ref No,Book/Purpose,Check In,Check Out,Date",
-                     ...(attendance || []).map(a => `"${a.name}","${a.studentRef}","${a.purpose}","${a.checkIn}","${a.checkOut}","${a.date}"`)
-                   ].join("\n");
-                   const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
-                   const url = window.URL.createObjectURL(blob);
-                   const a = document.createElement('a');
-                   a.setAttribute('href', url);
-                   a.setAttribute('download', `umat_library_full_report_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-                   a.click();
-                   showMsg('Full Report Exported');
-                 }}
-                 className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20"
-               >
-                 Export Full Report (CSV)
-               </button>
+              <h2 className="text-2xl font-bold text-white">System Analytics</h2>
+              <button
+                onClick={() => {
+                  const csvHeader = "Metric,Value\n";
+                  const csvRows = [
+                    `Total Visits,${(attendance || []).length}`,
+                    `In-Library Now,${(attendance || []).filter(a => !a.checkOut).length}`,
+                    `Database Size,${(students || []).length}`,
+                    "\nDetailed Attendance\n",
+                    "Student,Ref No,Book/Purpose,Check In,Check Out,Date",
+                    ...(attendance || []).map(a => `"${a.name}","${a.studentRef}","${a.purpose}","${a.checkIn}","${a.checkOut}","${a.date}"`)
+                  ].join("\n");
+                  const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.setAttribute('href', url);
+                  a.setAttribute('download', `umat_library_full_report_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+                  a.click();
+                  showMsg('Full Report Exported');
+                }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20"
+              >
+                Export Full Report (CSV)
+              </button>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1598,7 +1587,7 @@ export default function App() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" vertical={false} />
                       <XAxis dataKey="name" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
                       <YAxis stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '12px', fontSize: '12px' }}
                         itemStyle={{ color: '#10b981' }}
                       />
@@ -1614,12 +1603,12 @@ export default function App() {
                   Popular Resources / Purposes
                 </h3>
                 <div className="h-80 w-full">
-                   <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={getPurposeData()} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" horizontal={false} />
                       <XAxis type="number" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
                       <YAxis dataKey="name" type="category" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} width={120} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '12px', fontSize: '12px' }}
                       />
                       <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} />
@@ -1651,7 +1640,7 @@ export default function App() {
                         ))}
                       </Pie>
                       <Tooltip />
-                      <Legend verticalAlign="bottom" height={36}/>
+                      <Legend verticalAlign="bottom" height={36} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -1668,7 +1657,7 @@ export default function App() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" vertical={false} />
                       <XAxis dataKey="name" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
                       <YAxis stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '12px', fontSize: '12px' }}
                       />
                       <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
@@ -1678,46 +1667,45 @@ export default function App() {
               </div>
             </div>
 
-            {/* Danger Zone */}
             <div className="bg-[#141414] border border-red-900/20 p-8 rounded-3xl shadow-2xl relative overflow-hidden mt-8">
-               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
-               <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                  <div className="flex items-center gap-6">
-                     <div className="bg-red-500/10 p-4 rounded-2xl">
-                        <AlertTriangle className="w-8 h-8 text-red-500" />
-                     </div>
-                     <div>
-                        <h3 className="text-xl font-bold text-white mb-1">Danger Zone</h3>
-                        <p className="text-zinc-500 text-sm max-w-md">
-                           Permanently delete all students and all attendance records. This action cannot be undone.
-                        </p>
-                     </div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
+              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div className="flex items-center gap-6">
+                  <div className="bg-red-500/10 p-4 rounded-2xl">
+                    <AlertTriangle className="w-8 h-8 text-red-500" />
                   </div>
-                  {userRole === 'SUPER_ADMIN' && (
-                    <button 
-                      onClick={resetSystem}
-                      className="bg-red-600/10 hover:bg-red-600 border border-red-600 text-red-500 hover:text-white px-8 py-4 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-red-900/20 flex items-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" /> Clear All Data
-                    </button>
-                  )}
-               </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1">Danger Zone</h3>
+                    <p className="text-zinc-500 text-sm max-w-md">
+                      Permanently delete all students and all attendance records. This action cannot be undone.
+                    </p>
+                  </div>
+                </div>
+                {userRole === 'SUPER_ADMIN' && (
+                  <button
+                    onClick={resetSystem}
+                    className="bg-red-600/10 hover:bg-red-600 border border-red-600 text-red-500 hover:text-white px-8 py-4 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-red-900/20 flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" /> Clear All Data
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
 
         <AnimatePresence>
           {selectedStudent && (
-             <StudentDetailModal 
-               student={selectedStudent} 
-               attendance={attendance}
-               onClose={() => setSelectedStudent(null)}
-               onUpdate={updateStudent}
-               onDelete={deleteStudent}
-               onDrop={dropStudent}
-               deletingRef={deletingRef}
-               userRole={userRole}
-             />
+            <StudentDetailModal
+              student={selectedStudent}
+              attendance={attendance}
+              onClose={() => setSelectedStudent(null)}
+              onUpdate={updateStudent}
+              onDelete={deleteStudent}
+              onDrop={dropStudent}
+              deletingRef={deletingRef}
+              userRole={userRole}
+            />
           )}
         </AnimatePresence>
       </main>
