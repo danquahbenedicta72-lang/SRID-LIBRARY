@@ -19,6 +19,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const distPath = path.join(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
+// Get all students
 app.get('/api/students', async (req, res) => {
   try {
     const { data, error } = await supabase.from('students').select('*');
@@ -29,6 +30,7 @@ app.get('/api/students', async (req, res) => {
   }
 });
 
+// Register a new student
 app.post('/api/students', async (req, res) => {
   try {
     const { data, error } = await supabase.from('students').insert(req.body).select();
@@ -39,50 +41,63 @@ app.post('/api/students', async (req, res) => {
   }
 });
 
+// Delete a student
+app.delete('/api/students/:refNo', async (req, res) => {
+  try {
+    const { refNo } = req.params;
+    await supabase.from('attendance').delete().eq('studentRef', refNo);
+    await supabase.from('students').delete().eq('refNo', refNo);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get attendance for analytics
 app.get('/api/attendance', async (req, res) => {
   try {
     const { data: attendanceData, error: attError } = await supabase.from('attendance').select('*');
     if (attError) throw attError;
-    
-    const { data: studentsData, error: stuError } = await supabase.from('students').select('refNo, year, programme');
+
+    const { data: studentsData, error: stuError } = await supabase.from('students').select('refNo, year, programme, name');
     if (stuError) throw stuError;
-    
+
     const studentsMap = new Map();
-    studentsData.forEach(s => studentsMap.set(s.refNo, { year: s.year, programme: s.programme }));
-    
+    studentsData.forEach(s => studentsMap.set(s.refNo, { year: s.year, programme: s.programme, name: s.name }));
+
     const enriched = attendanceData.map(record => ({
       ...record,
       year: studentsMap.get(record.studentRef)?.year,
-      programme: studentsMap.get(record.studentRef)?.programme
+      programme: studentsMap.get(record.studentRef)?.programme,
+      name: studentsMap.get(record.studentRef)?.name
     }));
-    
+
     res.json(enriched);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// Attendance action
 app.post('/api/attendance/action', async (req, res) => {
   try {
     const { studentRef, action, purpose } = req.body;
     const today = new Date().toISOString().split('T')[0];
-    
+
     if (action === 'Arrive') {
-      const { error } = await supabase.from('attendance').insert({
+      await supabase.from('attendance').insert({
         studentRef,
         date: today,
         checkIn: new Date().toISOString(),
         purpose: purpose || null
       });
-      if (error) throw error;
       res.json({ success: true });
     } else if (action === 'Leave') {
-      const { error } = await supabase.from('attendance')
+      await supabase.from('attendance')
         .update({ checkOut: new Date().toISOString() })
         .eq('studentRef', studentRef)
         .eq('date', today)
         .is('checkOut', null);
-      if (error) throw error;
       res.json({ success: true });
     } else {
       res.status(400).json({ error: 'Invalid action' });
@@ -92,6 +107,7 @@ app.post('/api/attendance/action', async (req, res) => {
   }
 });
 
+// Catch-all route (must be LAST)
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
