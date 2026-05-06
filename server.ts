@@ -12,17 +12,13 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.json());
 
-// Supabase client
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Serve static files from 'dist' folder
 const distPath = path.join(process.cwd(), 'dist');
+app.use(express.static(distPath));
 
-// ========== API ROUTES (MUST come before static/catch-all) ==========
-
-// Get all students
 app.get('/api/students', async (req, res) => {
   try {
     const { data, error } = await supabase.from('students').select('*');
@@ -33,7 +29,6 @@ app.get('/api/students', async (req, res) => {
   }
 });
 
-// Register a new student
 app.post('/api/students', async (req, res) => {
   try {
     const { data, error } = await supabase.from('students').insert(req.body).select();
@@ -44,12 +39,21 @@ app.post('/api/students', async (req, res) => {
   }
 });
 
-// Attendance action (Arrive/Leave)
+app.get('/api/attendance', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('attendance').select('*');
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/attendance/action', async (req, res) => {
   try {
     const { studentRef, action, purpose } = req.body;
     const today = new Date().toISOString().split('T')[0];
-
+    
     if (action === 'Arrive') {
       const { error } = await supabase.from('attendance').insert({
         studentRef,
@@ -75,15 +79,10 @@ app.post('/api/attendance/action', async (req, res) => {
   }
 });
 
-// ========== STATIC FILES ==========
-app.use(express.static(distPath));
-
-// ========== CATCH-ALL (must be LAST) ==========
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-// ========== START SERVER ==========
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
