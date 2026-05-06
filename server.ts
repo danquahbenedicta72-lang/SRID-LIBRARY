@@ -41,9 +41,22 @@ app.post('/api/students', async (req, res) => {
 
 app.get('/api/attendance', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('attendance').select('*');
-    if (error) throw error;
-    res.json(data || []);
+    const { data: attendanceData, error: attError } = await supabase.from('attendance').select('*');
+    if (attError) throw attError;
+    
+    const { data: studentsData, error: stuError } = await supabase.from('students').select('refNo, year, programme');
+    if (stuError) throw stuError;
+    
+    const studentsMap = new Map();
+    studentsData.forEach(s => studentsMap.set(s.refNo, { year: s.year, programme: s.programme }));
+    
+    const enriched = attendanceData.map(record => ({
+      ...record,
+      year: studentsMap.get(record.studentRef)?.year,
+      programme: studentsMap.get(record.studentRef)?.programme
+    }));
+    
+    res.json(enriched);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
