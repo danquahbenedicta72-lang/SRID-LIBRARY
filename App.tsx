@@ -70,8 +70,8 @@ const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: 
           id={`nav-${tab.id}`}
           onClick={() => setActiveTab(tab.id)}
           className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${activeTab === tab.id
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+            : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
             }`}
         >
           <tab.icon className="w-4 h-4" />
@@ -669,8 +669,8 @@ const StudentDetailModal = ({
               }}
               disabled={deletingRef === student.refNo}
               className={`px-4 py-2.5 rounded-xl border border-red-900/30 font-bold text-xs transition-all flex items-center gap-2 ${deletingRef === student.refNo
-                  ? 'bg-red-500/10 text-red-400 opacity-50 cursor-not-allowed'
-                  : 'text-red-500 hover:bg-red-500/10'
+                ? 'bg-red-500/10 text-red-400 opacity-50 cursor-not-allowed'
+                : 'text-red-500 hover:bg-red-500/10'
                 }`}
             >
               {deletingRef === student.refNo ? <Clock className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
