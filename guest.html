@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guest Registration - UMaT-SRID Library</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body {
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    }
+</style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div
+        class="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500"></div>
+
+        <div class="flex flex-col items-center text-center mb-8">
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+                alt="UMaT Logo" class="w-20 h-20 object-contain mb-4">
+            <h1 class="text-2xl font-bold text-white tracking-tight">Guest Registration</h1>
+            <p class="text-zinc-500 text-sm mt-2">Record your library visit</p>
+        </div>
+
+        <form id="guestForm" class="space-y-4">
+            <div class="space-y-1">
+                <label class="text-xs font-mono uppercase text-zinc-500 tracking-widest">Full Name <span
+                        class="text-red-500">*</span></label>
+                <input type="text" id="name" required placeholder="Enter your full name"
+                    class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-mono uppercase text-zinc-500 tracking-widest">Location / From <span
+                        class="text-red-500">*</span></label>
+                <input type="text" id="location" required placeholder="e.g., Tarkwa, Accra, International"
+                    class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-mono uppercase text-zinc-500 tracking-widest">Purpose of Visit <span
+                        class="text-red-500">*</span></label>
+                <input type="text" id="purpose" required placeholder="e.g., Research, Study, Borrow Books"
+                    class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all">
+            </div>
+
+            <div id="errorMsg"
+                class="hidden text-red-500 text-xs text-center flex items-center justify-center gap-1 mt-2"></div>
+            <div id="successMsg"
+                class="hidden text-emerald-500 text-xs text-center flex items-center justify-center gap-1 mt-2"></div>
+
+            <button type="submit" id="submitBtn"
+                class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-purple-900/20 active:scale-95">
+                Complete Guest Registration
+            </button>
+
+            <div class="text-center mt-4">
+                <a href="/" class="text-zinc-600 hover:text-purple-500 text-xs transition-colors">← Back to Library
+                    Portal</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('guestForm');
+        const nameInput = document.getElementById('name');
+        const locationInput = document.getElementById('location');
+        const purposeInput = document.getElementById('purpose');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            errorMsg.classList.add('hidden');
+            successMsg.classList.add('hidden');
+
+            const name = nameInput.value.trim();
+            const location = locationInput.value.trim();
+            const purpose = purposeInput.value.trim();
+
+            if (!name || !location || !purpose) {
+                errorMsg.textContent = 'All fields are required.';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registering...';
+
+            try {
+                const response = await fetch('/api/guest-visits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, location, purpose })
+                });
+
+                if (response.ok) {
+                    successMsg.textContent = '✓ Guest registration complete! Thank you for visiting.';
+                    successMsg.classList.remove('hidden');
+                    nameInput.value = '';
+                    locationInput.value = '';
+                    purposeInput.value = '';
+                } else {
+                    const err = await response.json();
+                    errorMsg.textContent = err.error || 'Registration failed. Please try again.';
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Connection error. Please try again.';
+                errorMsg.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Complete Guest Registration';
+            }
+        });
+    </script>
+</body>
+
+</html>
