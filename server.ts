@@ -19,6 +19,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const distPath = path.join(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
+// ========== STUDENT ROUTES ==========
+
 // Get all students
 app.get('/api/students', async (req, res) => {
   try {
@@ -53,51 +55,77 @@ app.delete('/api/students/:refNo', async (req, res) => {
   }
 });
 
-// Get attendance for analytics
+// Drop a student (mark as DROPPED)
+app.post('/api/students/:refNo/drop', async (req, res) => {
+  try {
+    const { refNo } = req.params;
+    await supabase.from('students').update({ status: 'DROPPED' }).eq('refNo', refNo);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update a student
+app.put('/api/students/:refNo', async (req, res) => {
+  try {
+    const { refNo } = req.params;
+    await supabase.from('students').update(req.body).eq('refNo', refNo);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Bulk import students
+app.post('/api/students/bulk', async (req, res) => {
+  try {
+    const students = req.body;
+    let added = 0, skipped = 0;
+    for (const student of students) {
+      const { error } = await supabase.from('students').insert(student);
+      if (error) skipped++;
+      else added++;
+    }
+    res.json({ added, skipped });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== ATTENDANCE ROUTES ==========
+
+// Get attendance with student details
 app.get('/api/attendance', async (req, res) => {
   try {
     const { data: attendanceData, error: attError } = await supabase.from('attendance').select('*');
     if (attError) throw attError;
-
     const { data: studentsData, error: stuError } = await supabase.from('students').select('refNo, year, programme, name');
     if (stuError) throw stuError;
-
     const studentsMap = new Map();
     studentsData.forEach(s => studentsMap.set(s.refNo, { year: s.year, programme: s.programme, name: s.name }));
-
     const enriched = attendanceData.map(record => ({
       ...record,
       year: studentsMap.get(record.studentRef)?.year,
       programme: studentsMap.get(record.studentRef)?.programme,
       name: studentsMap.get(record.studentRef)?.name
     }));
-
     res.json(enriched);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Attendance action
+// Attendance action (Arrive/Leave)
 app.post('/api/attendance/action', async (req, res) => {
   try {
     const { studentRef, action, purpose } = req.body;
     const today = new Date().toISOString().split('T')[0];
-
     if (action === 'Arrive') {
-      await supabase.from('attendance').insert({
-        studentRef,
-        date: today,
-        checkIn: new Date().toISOString(),
-        purpose: purpose || null
-      });
+      await supabase.from('attendance').insert({ studentRef, date: today, checkIn: new Date().toISOString(), purpose: purpose || null });
       res.json({ success: true });
     } else if (action === 'Leave') {
-      await supabase.from('attendance')
-        .update({ checkOut: new Date().toISOString() })
-        .eq('studentRef', studentRef)
-        .eq('date', today)
-        .is('checkOut', null);
+      await supabase.from('attendance').update({ checkOut: new Date().toISOString() }).eq('studentRef', studentRef).eq('date', today).is('checkOut', null);
       res.json({ success: true });
     } else {
       res.status(400).json({ error: 'Invalid action' });
@@ -107,11 +135,56 @@ app.post('/api/attendance/action', async (req, res) => {
   }
 });
 
-// Catch-all route (must be LAST)
+// ========== GUEST VISITS ROUTES ==========
+
+// Get all guest visits
+app.get('/api/guest-visits', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('guest_visits').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Register a guest visit
+app.post('/api/guest-visits', async (req, res) => {
+  try {
+    const { name, location, purpose } = req.body;
+    const visit_date = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase.from('guest_visits').insert({ name, location, purpose, visit_date }).select();
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (err: any) {
+    console.error('Guest registration error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== SYSTEM ROUTES ==========
+
+// Reset system (delete all data)
+app.post('/api/system/reset', async (req, res) => {
+  try {
+    await supabase.from('attendance').delete().neq('id', 0);
+    await supabase.from('students').delete().neq('id', 0);
+    await supabase.from('guest_visits').delete().neq('id', 0);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== STATIC FILES ==========
+app.use(express.static(distPath));
+
+// ========== CATCH-ALL (MUST be LAST) ==========
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
+// ========== START SERVER ==========
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
