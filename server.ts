@@ -19,9 +19,12 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const distPath = path.join(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
-// ========== STUDENT ROUTES ==========
+// ========== GUEST ROUTE (must be before catch-all) ==========
+app.get('/guest', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'guest.html'));
+});
 
-// Get all students
+// ========== STUDENT ROUTES ==========
 app.get('/api/students', async (req, res) => {
   try {
     const { data, error } = await supabase.from('students').select('*');
@@ -32,7 +35,6 @@ app.get('/api/students', async (req, res) => {
   }
 });
 
-// Register a new student
 app.post('/api/students', async (req, res) => {
   try {
     const { data, error } = await supabase.from('students').insert(req.body).select();
@@ -43,7 +45,6 @@ app.post('/api/students', async (req, res) => {
   }
 });
 
-// Delete a student
 app.delete('/api/students/:refNo', async (req, res) => {
   try {
     const { refNo } = req.params;
@@ -55,7 +56,6 @@ app.delete('/api/students/:refNo', async (req, res) => {
   }
 });
 
-// Drop a student (mark as DROPPED)
 app.post('/api/students/:refNo/drop', async (req, res) => {
   try {
     const { refNo } = req.params;
@@ -66,7 +66,6 @@ app.post('/api/students/:refNo/drop', async (req, res) => {
   }
 });
 
-// Update a student
 app.put('/api/students/:refNo', async (req, res) => {
   try {
     const { refNo } = req.params;
@@ -77,7 +76,6 @@ app.put('/api/students/:refNo', async (req, res) => {
   }
 });
 
-// Bulk import students
 app.post('/api/students/bulk', async (req, res) => {
   try {
     const students = req.body;
@@ -94,8 +92,6 @@ app.post('/api/students/bulk', async (req, res) => {
 });
 
 // ========== ATTENDANCE ROUTES ==========
-
-// Get attendance with student details
 app.get('/api/attendance', async (req, res) => {
   try {
     const { data: attendanceData, error: attError } = await supabase.from('attendance').select('*');
@@ -116,7 +112,6 @@ app.get('/api/attendance', async (req, res) => {
   }
 });
 
-// Attendance action (Arrive/Leave)
 app.post('/api/attendance/action', async (req, res) => {
   try {
     const { studentRef, action, purpose } = req.body;
@@ -135,9 +130,7 @@ app.post('/api/attendance/action', async (req, res) => {
   }
 });
 
-// ========== GUEST VISITS ROUTES ==========
-
-// Get all guest visits
+// ========== GUEST VISITS API ROUTES ==========
 app.get('/api/guest-visits', async (req, res) => {
   try {
     const { data, error } = await supabase.from('guest_visits').select('*').order('created_at', { ascending: false });
@@ -148,7 +141,6 @@ app.get('/api/guest-visits', async (req, res) => {
   }
 });
 
-// Register a guest visit
 app.post('/api/guest-visits', async (req, res) => {
   try {
     const { name, location, purpose } = req.body;
@@ -163,8 +155,6 @@ app.post('/api/guest-visits', async (req, res) => {
 });
 
 // ========== SYSTEM ROUTES ==========
-
-// Reset system (delete all data)
 app.post('/api/system/reset', async (req, res) => {
   try {
     await supabase.from('attendance').delete().neq('id', 0);
@@ -184,7 +174,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-// ========== START SERVER ==========
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
