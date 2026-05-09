@@ -43,7 +43,14 @@ import { QRCodeSVG } from 'qrcode.react';
 import Papa from 'papaparse';
 import { Student, AttendanceRecord, UserRole, StudentStatus } from './types';
 import { PROGRAMMES, YEARS, HALLS } from './constants';
-
+interface GuestVisit {
+  id: number;
+  name: string;
+  location: string;
+  purpose: string;
+  visit_date: string;
+  created_at: string;
+}
 // Shared Components
 const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) => (
   <nav className="bg-[#141414] text-white p-4 flex justify-between items-center border-b border-[#2a2a2a] sticky top-0 z-50">
