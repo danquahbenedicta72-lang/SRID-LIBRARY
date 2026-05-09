@@ -43,14 +43,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import Papa from 'papaparse';
 import { Student, AttendanceRecord, UserRole, StudentStatus } from './types';
 import { PROGRAMMES, YEARS, HALLS } from './constants';
-interface GuestVisit {
-  id: number;
-  name: string;
-  location: string;
-  purpose: string;
-  visit_date: string;
-  created_at: string;
-}
+
 // Shared Components
 const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) => (
   <nav className="bg-[#141414] text-white p-4 flex justify-between items-center border-b border-[#2a2a2a] sticky top-0 z-50">
@@ -69,9 +62,11 @@ const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: 
       {[
         { id: 'attendance', label: 'Attendance', icon: Clock },
         { id: 'students', label: 'Students', icon: Users },
+        { id: 'guests', label: 'Guests', icon: Users },
         { id: 'qr', label: 'QR Center', icon: QrCode },
         { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       ].map((tab) => (
+
         <button
           key={tab.id}
           id={`nav-${tab.id}`}
@@ -712,6 +707,7 @@ const StudentDetailModal = ({
 export default function App() {
   const [activeTab, setActiveTab] = useState('attendance');
   const [students, setStudents] = useState<Student[]>([]);
+  const [guests, setGuests] = useState<any[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [purpose, setPurpose] = useState('');
@@ -741,6 +737,14 @@ export default function App() {
       } else {
         console.error('Students data is not an array:', studentsData);
         setStudents([]);
+      }
+      // Fetch guests
+      try {
+        const guestRes = await fetch('/api/guests');
+        const guestData = await guestRes.json();
+        if (Array.isArray(guestData)) setGuests(guestData);
+      } catch (err) {
+        console.log('Failed to fetch guests');
       }
 
       // Fetch attendance (if endpoint exists, otherwise use empty array)
@@ -1445,6 +1449,60 @@ export default function App() {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        {activeTab === 'guests' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Users className="w-5 h-5 text-purple-500" />
+                    Guest Visitor Log
+                  </h2>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono text-zinc-600">{guests.length} Total Visits</span>
+                </div>
+              </div>
+
+              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
+                    <tr>
+                      <th className="py-3 px-4">Date & Time</th>
+                      <th className="py-3 px-4">Guest Name</th>
+                      <th className="py-3 px-4">Institution</th>
+                      <th className="py-3 px-4">Contact</th>
+                      <th className="py-3 px-4">Purpose</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm divide-y divide-[#2a2a2a]">
+                    {guests.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td>
+                      </tr>
+                    ) : (
+                      [...guests].reverse().map((guest, i) => (
+                        <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
+                          <td className="py-3 px-4 text-zinc-400 font-mono text-xs whitespace-nowrap">
+                            {format(new Date(guest.createdAt), 'MMM dd, HH:mm')}
+                          </td>
+                          <td className="py-3 px-4 text-white font-medium">{guest.fullName}</td>
+                          <td className="py-3 px-4 text-zinc-400">{guest.institution}</td>
+                          <td className="py-3 px-4 text-zinc-400">{guest.contact}</td>
+                          <td className="py-3 px-4 text-zinc-500 italic text-xs">{guest.purpose}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </motion.div>
