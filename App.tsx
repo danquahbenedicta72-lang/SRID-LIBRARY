@@ -767,7 +767,7 @@ export default function App() {
       }
       // Fetch guests
       try {
-        const guestRes = await fetch('/api/guests');
+        const guestRes = await fetch('/api/guest-visits');
         const guestData = await guestRes.json();
         if (Array.isArray(guestData)) setGuests(guestData);
       } catch (err) {
@@ -1481,60 +1481,45 @@ export default function App() {
           </motion.div>
         )}
         {activeTab === 'guests' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <div className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Users className="w-5 h-5 text-purple-500" />
-                    Guest Visitor Log
-                  </h2>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono text-zinc-600">{guests.length} Total Visits</span>
-                </div>
-              </div>
-
-              <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
-                    <tr>
-                      <th className="py-3 px-4">Date & Time</th>
-                      <th className="py-3 px-4">Guest Name</th>
-                      <th className="py-3 px-4">Institution</th>
-                      <th className="py-3 px-4">Contact</th>
-                      <th className="py-3 px-4">Purpose</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm divide-y divide-[#2a2a2a]">
-                    {guests.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td>
-                      </tr>
-                    ) : (
-                      [...guests].reverse().map((guest, i) => (
-                        <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
-                          <td className="py-3 px-4 text-zinc-400 font-mono text-xs whitespace-nowrap">
-                            {format(new Date(guest.createdAt), 'MMM dd, HH:mm')}
-                          </td>
-                          <td className="py-3 px-4 text-white font-medium">{guest.fullName}</td>
-                          <td className="py-3 px-4 text-zinc-400">{guest.institution}</td>
-                          <td className="py-3 px-4 text-zinc-400">{guest.contact}</td>
-                          <td className="py-3 px-4 text-zinc-500 italic text-xs">{guest.purpose}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+          <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-purple-500" />
+                Guest Visits
+              </h2>
+              <span className="text-xs font-mono text-zinc-600">{guests.length} Total Guests</span>
             </div>
-          </motion.div>
-        )}
 
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
+                  <tr>
+                    <th className="py-3 px-4">Name</th>
+                    <th className="py-3 px-4">Location</th>
+                    <th className="py-3 px-4">Purpose</th>
+                    <th className="py-3 px-4">Visit Date</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm divide-y divide-[#2a2a2a]">
+                  {guests.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td>
+                    </tr>
+                  ) : (
+                    guests.map((guest, index) => (
+                      <tr key={index} className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="py-3 px-4 text-white font-medium">{guest.name}</td>
+                        <td className="py-3 px-4 text-zinc-400">{guest.location}</td>
+                        <td className="py-3 px-4 text-zinc-400 italic">{guest.purpose}</td>
+                        <td className="py-3 px-4 text-zinc-500 font-mono text-xs">{guest.visit_date}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
         {activeTab === 'qr' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
