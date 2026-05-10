@@ -1009,23 +1009,31 @@ export default function App() {
   };
 
   const getTrendData = () => {
-    const counts: Record<string, number> = {};
+    const counts: Record<string, { students: number, guests: number }> = {};
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
-      counts[dateStr] = 0;
+      counts[dateStr] = { students: 0, guests: 0 };
     }
 
     (attendance || []).forEach(a => {
       if (counts[a.date] !== undefined) {
-        counts[a.date]++;
+        counts[a.date].students++;
       }
     });
 
-    return Object.entries(counts).map(([date, count]) => ({
+    (guests || []).forEach(g => {
+      const dateStr = (g.visit_date || g.createdAt || '').substring(0, 10);
+      if (counts[dateStr] !== undefined) {
+        counts[dateStr].guests++;
+      }
+    });
+
+    return Object.entries(counts).map(([date, data]) => ({
       name: format(new Date(date), 'MMM dd'),
-      count
+      Students: data.students,
+      Guests: data.guests
     }));
   };
 
@@ -1035,12 +1043,15 @@ export default function App() {
       const purpose = a.purpose?.trim() || 'General Study';
       counts[purpose] = (counts[purpose] || 0) + 1;
     });
+    (guests || []).forEach(g => {
+      const purpose = g.purpose?.trim() || 'General Visit';
+      counts[purpose] = (counts[purpose] || 0) + 1;
+    });
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([name, value]) => ({ name, value }));
   };
-
   const getInactiveStudents = () => {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
@@ -1638,7 +1649,7 @@ export default function App() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { title: 'Total Visits', value: (attendance || []).length, icon: BookOpen, color: 'text-emerald-500' },
+                { title: 'Guest Visits', value: guests.length, icon: Users, color: 'text-purple-500' },
                 { title: 'In-Library', value: (attendance || []).filter(a => !a.checkOut).length, icon: LogIn, color: 'text-blue-500' },
                 { title: 'Database Size', value: (students || []).length, icon: Users, color: 'text-amber-500' },
               ].map((stat, i) => (
@@ -1668,9 +1679,10 @@ export default function App() {
                       <YAxis stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #2a2a2a', borderRadius: '12px', fontSize: '12px' }}
-                        itemStyle={{ color: '#10b981' }}
                       />
-                      <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '12px', color: '#a1a1aa' }} />
+                      <Bar dataKey="Students" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Guests" fill="#a855f7" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
