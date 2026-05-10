@@ -64,6 +64,7 @@ const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: 
         { id: 'students', label: 'Students', icon: Users },
         { id: 'guests', label: 'Guests', icon: Users },
         { id: 'qr', label: 'QR Center', icon: QrCode },
+        { id: 'adminlogs', label: 'Admin Logs', icon: Clock },
         { id: 'analytics', label: 'Analytics', icon: BarChart3 },
       ].map((tab) => (
 
@@ -405,7 +406,7 @@ const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
   )
 }
 
-const LoginMode = ({ onLogin }: { onLogin: (role: UserRole) => void }) => {
+const LoginMode = ({ onLogin }: { onLogin: (role: UserRole, username: string) => void }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -417,16 +418,20 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole) => void }) => {
     'viewer': { pass: 'viewer123', role: 'VIEWER' }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const user = credentials[username];
     if (user && user.pass === password) {
-      onLogin(user.role);
+      await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+      onLogin(user.role, username);
     } else {
       setError('Invalid username or password');
     }
   };
-
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
       <motion.div
@@ -707,6 +712,7 @@ const StudentDetailModal = ({
 export default function App() {
   const [activeTab, setActiveTab] = useState('attendance');
   const [students, setStudents] = useState<Student[]>([]);
+  const [adminLogs, setAdminLogs] = useState<any[]>([]);
   const [guests, setGuests] = useState<any[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -714,6 +720,7 @@ export default function App() {
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [currentUsername, setCurrentUsername] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [deletingRef, setDeletingRef] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -772,6 +779,13 @@ export default function App() {
         if (Array.isArray(guestData)) setGuests(guestData);
       } catch (err) {
         console.log('Failed to fetch guests');
+      }
+      try {
+        const logsRes = await fetch('/api/admin/logs');
+        const logsData = await logsRes.json();
+        if (Array.isArray(logsData)) setAdminLogs(logsData);
+      } catch (err) {
+        console.log('Failed to fetch admin logs');
       }
 
       // Fetch attendance (if endpoint exists, otherwise use empty array)
@@ -980,10 +994,12 @@ export default function App() {
   if (view === 'register') return <RegistrationMode onComplete={() => fetchData()} />;
 
   // ADMIN ROUTES — Require authentication
+  // ADMIN ROUTES — Require authentication
   if (!isAuthenticated) {
-    return <LoginMode onLogin={(role) => {
+    return <LoginMode onLogin={(role, username) => {
       setIsAuthenticated(true);
       setUserRole(role);
+      setCurrentUsername(username);
     }} />;
   }
 
@@ -1074,7 +1090,26 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
-
+      {isAuthenticated && (
+        <div className="flex justify-end px-4 pt-2">
+          <button
+            onClick={async () => {
+              await fetch('/api/admin/logout', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUsername })
+              });
+              setIsAuthenticated(false);
+              setUserRole(null);
+              setCurrentUsername('');
+              window.location.hash = '';
+            }}
+            className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold"
+          >
+            Logout ({currentUsername})
+          </button>
+        </div>
+      )}
       <main className="max-w-7xl mx-auto p-4 sm:p-8">
         <AnimatePresence mode="wait">
           {message && (
@@ -1523,6 +1558,44 @@ export default function App() {
                         <td className="py-3 px-4 text-zinc-400">{guest.location}</td>
                         <td className="py-3 px-4 text-zinc-400 italic">{guest.purpose}</td>
                         <td className="py-3 px-4 text-zinc-500 font-mono text-xs">{guest.visit_date}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        {activeTab === 'adminlogs' && (
+          <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Clock className="w-5 h-5 text-emerald-500" />
+                Admin Login History
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
+                  <tr>
+                    <th className="py-3 px-4">Admin</th>
+                    <th className="py-3 px-4">Login Time</th>
+                    <th className="py-3 px-4">Logout Time</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm divide-y divide-[#2a2a2a]">
+                  {adminLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-zinc-600 italic">No admin login records yet.</td>
+                    </tr>
+                  ) : (
+                    adminLogs.map((log, index) => (
+                      <tr key={index} className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="py-3 px-4 text-white font-medium">{log.username}</td>
+                        <td className="py-3 px-4 text-zinc-400">{format(new Date(log.login_time), 'MMM dd, HH:mm:ss')}</td>
+                        <td className="py-3 px-4 text-zinc-400">
+                          {log.logout_time ? format(new Date(log.logout_time), 'MMM dd, HH:mm:ss') : 'Still logged in'}
+                        </td>
                       </tr>
                     ))
                   )}

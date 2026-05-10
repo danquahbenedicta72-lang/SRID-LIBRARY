@@ -178,7 +178,54 @@ app.post('/api/system/reset', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ========== ADMIN LOGS ROUTES ==========
 
+// Record admin login
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { username } = req.body;
+    const { data, error } = await supabase
+      .from('admin_logs')
+      .insert({ username, login_time: new Date().toISOString() })
+      .select();
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Record admin logout
+app.put('/api/admin/logout', async (req, res) => {
+  try {
+    const { username } = req.body;
+    const { error } = await supabase
+      .from('admin_logs')
+      .update({ logout_time: new Date().toISOString() })
+      .eq('username', username)
+      .is('logout_time', null)
+      .order('login_time', { ascending: false })
+      .limit(1);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all admin logs
+app.get('/api/admin/logs', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('admin_logs')
+      .select('*')
+      .order('login_time', { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // ========== STATIC FILES ==========
 app.use(express.static(distPath));
 
