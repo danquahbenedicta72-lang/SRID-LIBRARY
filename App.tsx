@@ -725,6 +725,33 @@ export default function App() {
     programme: 'CE',
     hall: 'Volta Hall'
   });
+  const [newGuest, setNewGuest] = useState({
+    fullName: '',
+    institution: '',
+    contact: '',
+    purpose: ''
+  });
+
+  const registerGuest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/guests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newGuest)
+      });
+      if (res.ok) {
+        showMsg('Guest registered successfully');
+        setNewGuest({ fullName: '', institution: '', contact: '', purpose: '' });
+        fetchData();
+      } else {
+        const err = await res.json();
+        showMsg(err.error || 'Failed to register guest', 'error');
+      }
+    } catch (err) {
+      showMsg('Registration failed', 'error');
+    }
+  };
 
   const fetchData = async () => {
     try {
