@@ -708,12 +708,60 @@ const StudentDetailModal = ({
     </motion.div>
   )
 }
+// Personal Sign-In Modal Component
+const PersonalSignInModal = ({ isOpen, onSignIn, onClose }: { isOpen: boolean, onSignIn: (name: string) => void, onClose: () => void }) => {
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
 
+  const handleSubmit = () => {
+    if (!name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+    onSignIn(name.trim());
+    setName('');
+    setError('');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-emerald-500"></div>
+        <div className="flex flex-col items-center text-center mb-6">
+          <h2 className="text-2xl font-bold text-white">Personal Sign In</h2>
+          <p className="text-zinc-500 text-sm mt-2">Please enter your name to access the dashboard</p>
+        </div>
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Enter your full name (e.g., Benedicta Danquah)"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+            autoFocus
+          />
+          {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 export default function App() {
   const [activeTab, setActiveTab] = useState('attendance');
   const [students, setStudents] = useState<Student[]>([]);
   const [adminLogs, setAdminLogs] = useState<any[]>([]);
   const [currentUsername, setCurrentUsername] = useState('');
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [isPersonalSignedIn, setIsPersonalSignedIn] = useState(false);
+  const [currentAdminName, setCurrentAdminName] = useState('');
   const [guests, setGuests] = useState<any[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -988,7 +1036,38 @@ export default function App() {
       }
     });
   };
+  const handlePersonalSignIn = async (name: string) => {
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: name })
+      });
+      if (res.ok) {
+        setCurrentAdminName(name);
+        setIsPersonalSignedIn(true);
+        setShowNameModal(false);
+        await fetchData();
+      }
+    } catch (err) {
+      console.error('Failed to record login');
+    }
+  };
 
+  const handlePersonalSignOut = async () => {
+    try {
+      await fetch('/api/admin/logout', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: currentAdminName })
+      });
+      setIsPersonalSignedIn(false);
+      setCurrentAdminName('');
+      await fetchData();
+    } catch (err) {
+      console.error('Failed to record logout');
+    }
+  };
   // STUDENT ROUTES — No login required
   if (view === 'scan') return <StudentMode />;
   if (view === 'register') return <RegistrationMode onComplete={() => fetchData()} />;
@@ -1091,9 +1170,36 @@ export default function App() {
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
       {isAuthenticated && (
-        <div className="flex justify-end px-4 pt-2">
+        <div className="flex justify-end px-4 pt-2 gap-3">
+          {/* Personal Sign In/Out Section */}
+          {!isPersonalSignedIn ? (
+            <button
+              onClick={() => setShowNameModal(true)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+            >
+              <LogIn className="w-4 h-4" /> Sign In
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span className="text-emerald-400 text-sm font-medium">Active: {currentAdminName}</span>
+              </div>
+              <button
+                onClick={handlePersonalSignOut}
+                className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" /> Sign Out
+              </button>
+            </div>
+          )}
+
+          {/* Main Dashboard Exit Button */}
           <button
             onClick={async () => {
+              if (isPersonalSignedIn) {
+                await handlePersonalSignOut();
+              }
               await fetch('/api/admin/logout', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -1102,14 +1208,21 @@ export default function App() {
               setIsAuthenticated(false);
               setUserRole(null);
               setCurrentUsername('');
+              setIsPersonalSignedIn(false);
+              setCurrentAdminName('');
               window.location.hash = '';
             }}
-            className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold"
+            className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-lg text-sm font-bold"
           >
-            Logout ({currentUsername})
+            Exit Dashboard
           </button>
         </div>
       )}
+      <PersonalSignInModal
+        isOpen={showNameModal}
+        onSignIn={handlePersonalSignIn}
+        onClose={() => setShowNameModal(false)}
+      />
       <main className="max-w-7xl mx-auto p-4 sm:p-8">
         <AnimatePresence mode="wait">
           {message && (

@@ -26,17 +26,7 @@ app.get('/guest', (req, res) => {
 });
 
 // ========== STUDENT ROUTES ==========
-// Get all guests
-app.get('/api/guests', async (req, res) => {
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase.from('guests').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    res.json(data || []);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch guests' });
-  }
-});
+
 
 app.get('/api/students', async (req, res) => {
   try {
