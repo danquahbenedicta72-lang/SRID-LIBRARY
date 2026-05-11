@@ -411,11 +411,11 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole, username: string) =>
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const credentials: Record<string, { pass: string, role: UserRole }> = {
-    'srid_lib': { pass: 'srid_srid', role: 'SUPER_ADMIN' },
-    'super_admin': { pass: 'super123', role: 'SUPER_ADMIN' },
-    'manager': { pass: 'manager123', role: 'MANAGER' },
-    'viewer': { pass: 'viewer123', role: 'VIEWER' }
+  const credentials: Record<string, { pass: string, role: UserRole, name: string }> = {
+    'srid_lib': { pass: 'srid_srid', role: 'SUPER_ADMIN', name: 'Your Name Here' },
+    'super_admin': { pass: 'super123', role: 'SUPER_ADMIN', name: 'System Admin' },
+    'manager': { pass: 'manager123', role: 'MANAGER', name: 'Library Manager' },
+    'viewer': { pass: 'viewer123', role: 'VIEWER', name: 'Guest Viewer' }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -713,6 +713,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('attendance');
   const [students, setStudents] = useState<Student[]>([]);
   const [adminLogs, setAdminLogs] = useState<any[]>([]);
+  const [currentUsername, setCurrentUsername] = useState('');
   const [guests, setGuests] = useState<any[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -720,7 +721,6 @@ export default function App() {
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [currentUsername, setCurrentUsername] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [deletingRef, setDeletingRef] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
