@@ -261,7 +261,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
+console.log('🔥 SERVER RESTARTED WITH DELETE ENDPOINT - PORT:', PORT);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log('Supabase connected');
