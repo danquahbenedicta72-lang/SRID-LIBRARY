@@ -1,3 +1,4 @@
+// FORCE DEPLOY - FIX GUEST CONTACT AND OCCUPATION
 import 'dotenv/config';
 import express from 'express';
 import path from 'path';
@@ -146,9 +147,9 @@ app.get('/api/guest-visits', async (req, res) => {
 
 app.post('/api/guest-visits', async (req, res) => {
   try {
-    const { name, location, purpose } = req.body;
+    const { name, location, contact, occupation, purpose } = req.body;
     const visit_date = new Date().toISOString().split('T')[0];
-    const { data, error } = await supabase.from('guest_visits').insert({ name, location, purpose, visit_date }).select();
+    const { data, error } = await supabase.from('guest_visits').insert({ name, location, contact, occupation, purpose, visit_date }).select();
     if (error) throw error;
     res.json(data[0]);
   } catch (err: any) {
