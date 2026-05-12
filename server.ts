@@ -1,3 +1,4 @@
+// FORCE DEPLOY - ADD DELETE ENDPOINT FOR ADMIN LOGS
 // FORCE DEPLOY - FIX GUEST CONTACT AND OCCUPATION
 import 'dotenv/config';
 import express from 'express';
