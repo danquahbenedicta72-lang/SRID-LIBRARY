@@ -217,6 +217,41 @@ app.get('/api/admin/logs', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ========== ADMIN PROFILE ROUTES ==========
+
+// Check if admin profile exists
+app.get('/api/admin/profile/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { data, error } = await supabase
+      .from('admin_profiles')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    res.json({ exists: !!data, profile: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create admin profile
+app.post('/api/admin/profile', async (req, res) => {
+  try {
+    const { username, full_name, contact, email } = req.body;
+    const { data, error } = await supabase
+      .from('admin_profiles')
+      .insert({ username, full_name, contact, email })
+      .select();
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ========== STATIC FILES ==========
 app.use(express.static(distPath));
 

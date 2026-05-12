@@ -714,6 +714,7 @@ const PersonalSignInModal = ({ isOpen, onSignIn, onClose }: { isOpen: boolean, o
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
+
   const handleSubmit = () => {
     if (!name.trim()) {
       setError('Please enter your name');
@@ -755,6 +756,82 @@ const PersonalSignInModal = ({ isOpen, onSignIn, onClose }: { isOpen: boolean, o
     </div>
   );
 };
+// Admin Registration Modal Component
+const AdminRegistrationModal = ({ isOpen, onRegister, onClose }: {
+  isOpen: boolean,
+  onRegister: (data: { fullName: string, contact: string, email: string }) => void,
+  onClose: () => void
+}) => {
+  const [fullName, setFullName] = useState('');
+  const [contact, setContact] = useState('');
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = () => {
+    if (!fullName.trim()) {
+      setError('Please enter your full name');
+      return;
+    }
+    if (!contact.trim()) {
+      setError('Please enter your phone number');
+      return;
+    }
+    if (!email.trim() || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    onRegister({ fullName: fullName.trim(), contact: contact.trim(), email: email.trim() });
+    setFullName('');
+    setContact('');
+    setEmail('');
+    setError('');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-emerald-500"></div>
+        <div className="flex flex-col items-center text-center mb-6">
+          <h2 className="text-2xl font-bold text-white">Admin Registration</h2>
+          <p className="text-zinc-500 text-sm mt-2">Please complete your profile to continue</p>
+        </div>
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Full Name (e.g., Benedicta Danquah)"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+            autoFocus
+          />
+          <input
+            type="tel"
+            placeholder="Phone Number (e.g., 0244123456)"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+          <input
+            type="email"
+            placeholder="Email Address (e.g., name@example.com)"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+          {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all"
+          >
+            Complete Registration
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 export default function App() {
   const [activeTab, setActiveTab] = useState('attendance');
   const [students, setStudents] = useState<Student[]>([]);
@@ -773,6 +850,8 @@ export default function App() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [deletingRef, setDeletingRef] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showAdminRegModal, setShowAdminRegModal] = useState(false);
+  const [adminProfile, setAdminProfile] = useState<any>(null);
 
   const [view, setView] = useState<'admin' | 'scan' | 'register'>('admin');
 
@@ -1083,10 +1162,23 @@ export default function App() {
   // ADMIN ROUTES — Require authentication
   // ADMIN ROUTES — Require authentication
   if (!isAuthenticated) {
-    return <LoginMode onLogin={(role, username) => {
+    return <LoginMode onLogin={async (role, username) => {
       setIsAuthenticated(true);
       setUserRole(role);
       setCurrentUsername(username);
+
+      // Check if admin profile exists
+      try {
+        const res = await fetch(`/api/admin/profile/${username}`);
+        const data = await res.json();
+        if (!data.exists) {
+          setShowAdminRegModal(true);
+        } else {
+          setAdminProfile(data.profile);
+        }
+      } catch (err) {
+        console.error('Failed to check admin profile');
+      }
     }} />;
   }
 
@@ -1230,6 +1322,34 @@ export default function App() {
         isOpen={showNameModal}
         onSignIn={handlePersonalSignIn}
         onClose={() => setShowNameModal(false)}
+      />
+      <AdminRegistrationModal
+        isOpen={showAdminRegModal}
+        onRegister={async ({ fullName, contact, email }) => {
+          try {
+            const res = await fetch('/api/admin/profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                username: currentUsername,
+                full_name: fullName,
+                contact: contact,
+                email: email
+              })
+            });
+            if (res.ok) {
+              const profile = await res.json();
+              setAdminProfile(profile);
+              setShowAdminRegModal(false);
+              showMsg('Admin profile created successfully!');
+            } else {
+              showMsg('Failed to create profile', 'error');
+            }
+          } catch (err) {
+            showMsg('Registration failed', 'error');
+          }
+        }}
+        onClose={() => { }}
       />
       <main className="max-w-7xl mx-auto p-4 sm:p-8">
         <AnimatePresence mode="wait">
