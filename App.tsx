@@ -784,20 +784,27 @@ export default function App() {
     fullName: '',
     institution: '',
     contact: '',
+    occupation: '',
     purpose: ''
   });
 
   const registerGuest = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/guests', {
+      const res = await fetch('/api/guest-visits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newGuest)
+        body: JSON.stringify({
+          name: newGuest.fullName,
+          location: newGuest.institution,
+          contact: newGuest.contact,
+          occupation: newGuest.occupation,
+          purpose: newGuest.purpose
+        })
       });
       if (res.ok) {
         showMsg('Guest registered successfully');
-        setNewGuest({ fullName: '', institution: '', contact: '', purpose: '' });
+        setNewGuest({ fullName: '', institution: '', contact: '', occupation: '', purpose: '' });
         fetchData();
       } else {
         const err = await res.json();
@@ -1654,20 +1661,25 @@ export default function App() {
                 <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
                   <tr>
                     <th className="py-3 px-4">Name</th>
+                    <th className="py-3 px-4">Phone</th>
+                    <th className="py-3 px-4">Occupation</th>
                     <th className="py-3 px-4">Location</th>
                     <th className="py-3 px-4">Purpose</th>
                     <th className="py-3 px-4">Visit Date</th>
                   </tr>
                 </thead>
+
                 <tbody className="text-sm divide-y divide-[#2a2a2a]">
                   {guests.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td>
+                      <td colSpan={6} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td>
                     </tr>
                   ) : (
                     guests.map((guest, index) => (
                       <tr key={index} className="hover:bg-zinc-800/30 transition-colors">
                         <td className="py-3 px-4 text-white font-medium">{guest.name}</td>
+                        <td className="py-3 px-4 text-zinc-400">{guest.contact || '-'}</td>
+                        <td className="py-3 px-4 text-zinc-400">{guest.occupation || '-'}</td>
                         <td className="py-3 px-4 text-zinc-400">{guest.location}</td>
                         <td className="py-3 px-4 text-zinc-400 italic">{guest.purpose}</td>
                         <td className="py-3 px-4 text-zinc-500 font-mono text-xs">{guest.visit_date}</td>

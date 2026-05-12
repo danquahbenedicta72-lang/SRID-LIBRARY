@@ -67,6 +67,8 @@
         const form = document.getElementById('guestForm');
         const nameInput = document.getElementById('name');
         const locationInput = document.getElementById('location');
+        const contactInput = document.getElementById('contact');
+        const occupationInput = document.getElementById('occupation');
         const purposeInput = document.getElementById('purpose');
         const submitBtn = document.getElementById('submitBtn');
         const errorMsg = document.getElementById('errorMsg');
@@ -80,9 +82,11 @@
 
             const name = nameInput.value.trim();
             const location = locationInput.value.trim();
+            const contact = contactInput.value.trim();
+            const occupation = occupationInput.value.trim();
             const purpose = purposeInput.value.trim();
 
-            if (!name || !location || !purpose) {
+            if (!name || !location || !contact || !occupation || !purpose) {
                 errorMsg.textContent = 'All fields are required.';
                 errorMsg.classList.remove('hidden');
                 return;
@@ -95,7 +99,7 @@
                 const response = await fetch('/api/guest-visits', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, location, purpose })
+                    body: JSON.stringify({ name, location, contact, occupation, purpose })
                 });
 
                 if (response.ok) {
@@ -103,6 +107,8 @@
                     successMsg.classList.remove('hidden');
                     nameInput.value = '';
                     locationInput.value = '';
+                    contactInput.value = '';
+                    occupationInput.value = '';
                     purposeInput.value = '';
                 } else {
                     const err = await response.json();
