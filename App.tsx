@@ -1827,6 +1827,7 @@ export default function App() {
                     <th className="py-3 px-4">Admin</th>
                     <th className="py-3 px-4">Login Time</th>
                     <th className="py-3 px-4">Logout Time</th>
+                    <th className="py-3 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm divide-y divide-[#2a2a2a]">
@@ -1841,6 +1842,29 @@ export default function App() {
                         <td className="py-3 px-4 text-zinc-400">{format(new Date(log.login_time), 'MMM dd, HH:mm:ss')}</td>
                         <td className="py-3 px-4 text-zinc-400">
                           {log.logout_time ? format(new Date(log.logout_time), 'MMM dd, HH:mm:ss') : 'Still logged in'}
+                        </td>
+                        <td className="py-3 px-4">
+                          <button
+                            onClick={async () => {
+                              if (window.confirm(`Delete login record for ${log.username}?`)) {
+                                try {
+                                  const res = await fetch(`/api/admin/logs/${log.id}`, { method: 'DELETE' });
+                                  if (res.ok) {
+                                    showMsg('Login record deleted');
+                                    fetchData();
+                                  } else {
+                                    showMsg('Failed to delete', 'error');
+                                  }
+                                } catch (err) {
+                                  showMsg('Delete failed', 'error');
+                                }
+                              }
+                            }}
+                            className="text-red-500 hover:text-red-400 transition-colors"
+                            title="Delete this login record"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))
