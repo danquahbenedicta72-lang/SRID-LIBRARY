@@ -269,6 +269,23 @@ app.delete('/api/admin/logs/:id', async (req, res) => {
 });
 
 // ========== ADMIN PROFILE ROUTES ==========
+// Check if profile exists by full_name
+app.get('/api/admin/profile-by-name/:name', async (req, res) => {
+  try {
+    const { name } = req.params;
+    const decodedName = decodeURIComponent(name);
+    const { data, error } = await supabase
+      .from('admin_profiles')
+      .select('*')
+      .eq('full_name', decodedName)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    res.json({ exists: !!data, profile: data });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Check if admin profile exists
 app.get('/api/admin/profile/:username', async (req, res) => {

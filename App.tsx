@@ -960,6 +960,12 @@ export default function App() {
     window.addEventListener('hashchange', updateView);
     return () => window.removeEventListener('hashchange', updateView);
   }, []);
+  // Auto-show personal sign in modal when dashboard loads
+  useEffect(() => {
+    if (isAuthenticated && !isPersonalSignedIn && !showNameModal) {
+      setShowNameModal(true);
+    }
+  }, [isAuthenticated, isPersonalSignedIn, showNameModal]);
 
   const showMsg = (text: string, type: 'success' | 'error' = 'success') => {
     setMessage({ text, type });
@@ -1129,28 +1135,41 @@ export default function App() {
   };
   const handlePersonalSignIn = async (name: string) => {
     try {
+      // First, check if this name already exists in admin_profiles
+      const checkRes = await fetch(`/api/admin/profile-by-name/${encodeURIComponent(name)}`);
+      const checkData = await checkRes.json();
+
+      if (checkData.exists) {
+        // Name already registered - just sign in
+        setCurrentAdminName(name);
+        setIsPersonalSignedIn(true);
+        setShowNameModal(false);
+        showMsg(`Welcome back, ${name}!`);
+        return;
+      }
+
+      // Name not registered - auto-create and show registration modal
       const res = await fetch('/api/admin/personal-signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name })
       });
+
       if (res.ok) {
         setCurrentAdminName(name);
         setIsPersonalSignedIn(true);
         setShowNameModal(false);
+        setShowAdminRegModal(true); // Show registration modal
         await fetchData();
-        // Refresh admin list if super admin is logged in
         if (userRole === 'SUPER_ADMIN') {
           viewAdmins();
         }
-      } else {
-        console.error('Failed to record personal sign-in');
       }
     } catch (err) {
       console.error('Failed to record login');
+      showMsg('Error during sign in', 'error');
     }
   };
-
   const handlePersonalSignOut = async () => {
     try {
       await fetch('/api/admin/logout', {
@@ -1356,12 +1375,10 @@ export default function App() {
         <div className="flex justify-end px-4 pt-2 gap-3">
           {/* Personal Sign In/Out Section */}
           {!isPersonalSignedIn ? (
-            <button
-              onClick={() => setShowNameModal(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
-            >
-              <LogIn className="w-4 h-4" /> Sign In
-            </button>
+            <div className="flex items-center gap-2 bg-yellow-500/10 px-3 py-1.5 rounded-lg">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+              <span className="text-yellow-400 text-sm font-medium">Pending Sign In...</span>
+            </div>
           ) : (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg">
@@ -1376,7 +1393,6 @@ export default function App() {
               </button>
             </div>
           )}
-
           {/* Main Dashboard Exit Button */}
           <button
             onClick={async () => {
