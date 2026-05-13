@@ -173,30 +173,55 @@ app.post('/api/system/reset', async (req, res) => {
 // ========== ADMIN LOGS ROUTES ==========
 
 // Record admin login
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/personal-signin', async (req, res) => {
   try {
-    const { username } = req.body;
+    const { name } = req.body;
 
-    // Get full_name from admin_users
-    const { data: userData } = await supabase
+    // Check if this admin exists in admin_users by full_name
+    let { data: existingAdmin } = await supabase
       .from('admin_users')
-      .select('full_name')
-      .eq('username', username)
+      .select('*')
+      .eq('full_name', name)
       .single();
 
-    const full_name = userData?.full_name || username;
+    // If not exists, auto-create admin account
+    if (!existingAdmin) {
+      const username = name.toLowerCase().replace(/\s/g, '_');
+      const { data: newAdmin, error: createError } = await supabase
+        .from('admin_users')
+        .insert({
+          username: username,
+          password: 'default123',
+          full_name: name,
+          role: 'ADMIN'
+        })
+        .select()
+        .single();
 
+      if (createError) {
+        console.error('Error creating admin:', createError);
+      } else {
+        existingAdmin = newAdmin;
+      }
+    }
+
+    // Record the login in admin_logs
     const { data, error } = await supabase
       .from('admin_logs')
-      .insert({ username, full_name, login_time: new Date().toISOString() })
+      .insert({
+        username: existingAdmin?.username || name.toLowerCase().replace(/\s/g, '_'),
+        full_name: name,
+        login_time: new Date().toISOString()
+      })
       .select();
+
     if (error) throw error;
-    res.json(data[0]);
+    res.json({ success: true, admin: existingAdmin });
   } catch (err: any) {
+    console.error('Personal sign-in error:', err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // Record admin logout
 app.put('/api/admin/logout', async (req, res) => {
   try {

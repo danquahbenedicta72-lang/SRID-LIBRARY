@@ -1129,16 +1129,22 @@ export default function App() {
   };
   const handlePersonalSignIn = async (name: string) => {
     try {
-      const res = await fetch('/api/admin/login', {
+      const res = await fetch('/api/admin/personal-signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: name })
+        body: JSON.stringify({ name: name })
       });
       if (res.ok) {
         setCurrentAdminName(name);
         setIsPersonalSignedIn(true);
         setShowNameModal(false);
         await fetchData();
+        // Refresh admin list if super admin is logged in
+        if (userRole === 'SUPER_ADMIN') {
+          viewAdmins();
+        }
+      } else {
+        console.error('Failed to record personal sign-in');
       }
     } catch (err) {
       console.error('Failed to record login');
