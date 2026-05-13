@@ -4,6 +4,7 @@ import {
   Users,
   Clock,
   BarChart3,
+  Shield,
   PlusCircle,
   Search,
   LogOut,
@@ -46,7 +47,7 @@ import { Student, AttendanceRecord, UserRole, StudentStatus } from './types';
 import { PROGRAMMES, YEARS, HALLS } from './constants';
 
 // Shared Components
-const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) => (
+const Navbar = ({ activeTab, setActiveTab, userRole }: { activeTab: string, setActiveTab: (tab: string) => void, userRole: UserRole | null }) => (
   <nav className="bg-[#141414] text-white p-4 flex justify-between items-center border-b border-[#2a2a2a] sticky top-0 z-50">
     <div className="flex items-center gap-2">
       <Building2 className="w-6 h-6 text-emerald-500" />
@@ -67,8 +68,8 @@ const Navbar = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: 
         { id: 'qr', label: 'QR Center', icon: QrCode },
         { id: 'adminlogs', label: 'Admin Logs', icon: Clock },
         { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+        ...(userRole === 'SUPER_ADMIN' ? [{ id: 'superadmin', label: 'Super Admin', icon: Shield }] : []),
       ].map((tab) => (
-
         <button
           key={tab.id}
           id={`nav-${tab.id}`}
@@ -413,10 +414,8 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole, username: string) =>
   const [error, setError] = useState('');
 
   const credentials: Record<string, { pass: string, role: UserRole, name: string }> = {
-    'srid_lib': { pass: 'srid_srid', role: 'SUPER_ADMIN', name: 'Your Name Here' },
-    'super_admin': { pass: 'super123', role: 'SUPER_ADMIN', name: 'System Admin' },
-    'manager': { pass: 'manager123', role: 'MANAGER', name: 'Library Manager' },
-    'viewer': { pass: 'viewer123', role: 'VIEWER', name: 'Guest Viewer' }
+    'super_lib': { pass: 'super_srid', role: 'SUPER_ADMIN', name: 'Super Admin' },
+    'srid_lib': { pass: 'srid_srid', role: 'ADMIN', name: 'Library Admin' }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -867,7 +866,11 @@ export default function App() {
     occupation: '',
     purpose: ''
   });
-
+  // Super Admin state
+  const [showAdminList, setShowAdminList] = useState(false);
+  const [adminList, setAdminList] = useState<any[]>([]);
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+  const [newAdmin, setNewAdmin] = useState({ username: '', password: '', full_name: '' });
   const registerGuest = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -1148,11 +1151,67 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: currentAdminName })
       });
+
       setIsPersonalSignedIn(false);
       setCurrentAdminName('');
       await fetchData();
     } catch (err) {
       console.error('Failed to record logout');
+    }
+  };
+  // Super Admin Functions
+  const viewAdmins = async () => {
+    try {
+      const res = await fetch('/api/admin/users');
+      const data = await res.json();
+      setAdminList(data);
+      setShowAdminList(true);
+    } catch (err) {
+      showMsg('Failed to fetch admins', 'error');
+    }
+  };
+
+  const addAdmin = async () => {
+    if (!newAdmin.username || !newAdmin.password) {
+      showMsg('Username and password required', 'error');
+      return;
+    }
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAdmin)
+      });
+      if (res.ok) {
+        showMsg('Admin added successfully');
+        setShowAddAdminModal(false);
+        setNewAdmin({ username: '', password: '', full_name: '' });
+      } else {
+        const err = await res.json();
+        showMsg(err.error || 'Failed to add admin', 'error');
+      }
+    } catch (err) {
+      showMsg('Error adding admin', 'error');
+    }
+  };
+
+  const deleteAdmin = async () => {
+    const username = prompt('Enter username of admin to delete:');
+    if (username && username !== 'super_lib') {
+      if (window.confirm(`Delete admin "${username}"? This cannot be undone.`)) {
+        try {
+          const res = await fetch(`/api/admin/users/${username}`, { method: 'DELETE' });
+          if (res.ok) {
+            showMsg('Admin deleted successfully');
+          } else {
+            showMsg('Failed to delete admin', 'error');
+          }
+        } catch (err) {
+          showMsg('Error deleting admin', 'error');
+        }
+      }
+    } else if (username === 'super_lib') {
+      showMsg('Cannot delete the main Super Admin account', 'error');
     }
   };
   // STUDENT ROUTES — No login required
@@ -1268,7 +1327,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans">
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} userRole={userRole} />
       {isAuthenticated && (
         <div className="flex justify-end px-4 pt-2 gap-3">
           {/* Personal Sign In/Out Section */}
@@ -1873,6 +1932,124 @@ export default function App() {
               </table>
             </div>
           </div>
+        )}
+        {activeTab === 'superadmin' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-8">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <Shield className="w-7 h-7 text-purple-500" />
+                Admin Management
+              </h2>
+
+              <div className="flex flex-wrap gap-4 justify-center">
+                <button
+                  onClick={viewAdmins}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all"
+                >
+                  <Eye className="w-6 h-6" /> View Admins
+                </button>
+
+                <button
+                  onClick={() => setShowAddAdminModal(true)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all"
+                >
+                  <PlusCircle className="w-6 h-6" /> Add Admin
+                </button>
+
+                <button
+                  onClick={deleteAdmin}
+                  className="bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all"
+                >
+                  <Trash2 className="w-6 h-6" /> Delete Admin
+                </button>
+              </div>
+            </div>
+
+            {/* View Admins Modal */}
+            {showAdminList && (
+              <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-6 shadow-2xl">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-white">Admin Accounts</h2>
+                    <button
+                      onClick={() => setShowAdminList(false)}
+                      className="text-zinc-500 hover:text-white transition-colors"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {adminList.length === 0 ? (
+                      <p className="text-zinc-500 text-center py-4">No admins found</p>
+                    ) : (
+                      adminList.map((admin) => (
+                        <div key={admin.username} className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl p-3">
+                          <p className="text-white font-medium">{admin.username}</p>
+                          <p className="text-zinc-500 text-xs">{admin.full_name || 'No name'}</p>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${admin.role === 'SUPER_ADMIN'
+                              ? 'bg-purple-500/10 text-purple-500'
+                              : 'bg-emerald-500/10 text-emerald-500'
+                            }`}>
+                            {admin.role || 'ADMIN'}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Add Admin Modal */}
+            {showAddAdminModal && (
+              <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-6 shadow-2xl">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-white">Add New Admin</h2>
+                    <button
+                      onClick={() => setShowAddAdminModal(false)}
+                      className="text-zinc-500 hover:text-white transition-colors"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      placeholder="Username *"
+                      value={newAdmin.username}
+                      onChange={(e) => setNewAdmin({ ...newAdmin, username: e.target.value })}
+                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password *"
+                      value={newAdmin.password}
+                      onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Full Name (optional)"
+                      value={newAdmin.full_name}
+                      onChange={(e) => setNewAdmin({ ...newAdmin, full_name: e.target.value })}
+                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                    <button
+                      onClick={addAdmin}
+                      className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-all"
+                    >
+                      Create Admin
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
         )}
         {activeTab === 'qr' && (
           <motion.div

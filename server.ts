@@ -266,6 +266,51 @@ app.post('/api/admin/profile', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ========== ADMIN USER MANAGEMENT (SUPER ADMIN ONLY) ==========
+
+// Get all admin users
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('admin_users')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create new admin user
+app.post('/api/admin/users', async (req, res) => {
+  try {
+    const { username, password, full_name } = req.body;
+    const { data, error } = await supabase
+      .from('admin_users')
+      .insert({ username, password, full_name, role: 'ADMIN' })
+      .select();
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete admin user
+app.delete('/api/admin/users/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { error } = await supabase
+      .from('admin_users')
+      .delete()
+      .eq('username', username);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ========== STATIC FILES ==========
 app.use(express.static(distPath));

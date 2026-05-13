@@ -1,10 +1,4 @@
-export type UserRole = 'SUPER_ADMIN' | 'MANAGER' | 'VIEWER';
-
-export interface Admin {
-  id: string;
-  username: string;
-  role: UserRole;
-}
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'VIEWER';
 
 export type StudentStatus = 'ACTIVE' | 'DROPPED';
 
