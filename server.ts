@@ -320,10 +320,10 @@ app.get('/api/admin/users', async (req, res) => {
 // Create new admin user
 app.post('/api/admin/users', async (req, res) => {
   try {
-    const { username, password, full_name } = req.body;
+    const { username, password, full_name, contact, email } = req.body;
     const { data, error } = await supabase
       .from('admin_users')
-      .insert({ username, password, full_name, role: 'ADMIN' })
+      .insert({ username, password, full_name, contact, email, role: 'ADMIN' })
       .select();
     if (error) throw error;
     res.json(data[0]);

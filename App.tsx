@@ -871,7 +871,7 @@ export default function App() {
   const [showAdminList, setShowAdminList] = useState(false);
   const [adminList, setAdminList] = useState<any[]>([]);
   const [showAddAdminModal, setShowAddAdminModal] = useState(false);
-  const [newAdmin, setNewAdmin] = useState({ username: '', password: '', full_name: '' });
+  const [newAdmin, setNewAdmin] = useState({ full_name: '', contact: '', email: '' });
   const registerGuest = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -1179,20 +1179,32 @@ export default function App() {
   };
 
   const addAdmin = async () => {
-    if (!newAdmin.username || !newAdmin.password) {
-      showMsg('Username and password required', 'error');
+    if (!newAdmin.full_name || !newAdmin.contact || !newAdmin.email) {
+      showMsg('All fields are required', 'error');
       return;
     }
+
+    // Auto-generate username from full name
+    const username = newAdmin.full_name.toLowerCase().replace(/\s/g, '_');
+    const defaultPassword = 'default123';
+
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newAdmin)
+        body: JSON.stringify({
+          username: username,
+          password: defaultPassword,
+          full_name: newAdmin.full_name,
+          contact: newAdmin.contact,
+          email: newAdmin.email
+        })
       });
       if (res.ok) {
-        showMsg('Admin added successfully');
+        showMsg(`Admin "${newAdmin.full_name}" added successfully! Default password: default123`);
         setShowAddAdminModal(false);
-        setNewAdmin({ username: '', password: '', full_name: '' });
+        setNewAdmin({ full_name: '', contact: '', email: '' });
+        viewAdmins(); // Refresh the admin list
       } else {
         const err = await res.json();
         showMsg(err.error || 'Failed to add admin', 'error');
@@ -1201,7 +1213,6 @@ export default function App() {
       showMsg('Error adding admin', 'error');
     }
   };
-
   const deleteAdmin = async () => {
     const fullName = prompt('Enter the FULL NAME of the admin to delete:');
     if (fullName) {
@@ -2023,33 +2034,30 @@ export default function App() {
                 <div className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-6 shadow-2xl">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-white">Add New Admin</h2>
-                    <button
-                      onClick={() => setShowAddAdminModal(false)}
-                      className="text-zinc-500 hover:text-white transition-colors"
-                    >
+                    <button onClick={() => setShowAddAdminModal(false)} className="text-zinc-500 hover:text-white">
                       <X className="w-6 h-6" />
                     </button>
                   </div>
                   <div className="space-y-4">
                     <input
                       type="text"
-                      placeholder="Username *"
-                      value={newAdmin.username}
-                      onChange={(e) => setNewAdmin({ ...newAdmin, username: e.target.value })}
-                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
-                    />
-                    <input
-                      type="password"
-                      placeholder="Password *"
-                      value={newAdmin.password}
-                      onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
-                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Full Name (optional)"
+                      placeholder="Full Name *"
                       value={newAdmin.full_name}
                       onChange={(e) => setNewAdmin({ ...newAdmin, full_name: e.target.value })}
+                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number *"
+                      value={newAdmin.contact}
+                      onChange={(e) => setNewAdmin({ ...newAdmin, contact: e.target.value })}
+                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email Address *"
+                      value={newAdmin.email}
+                      onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
                       className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
                     />
                     <button
@@ -2059,6 +2067,10 @@ export default function App() {
                       Create Admin
                     </button>
                   </div>
+                  <p className="text-zinc-500 text-xs text-center mt-4">
+                    Username will be auto-generated from full name.<br />
+                    Default password: <strong>default123</strong> (admin can change later)
+                  </p>
                 </div>
               </div>
             )}
