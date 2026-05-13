@@ -176,9 +176,19 @@ app.post('/api/system/reset', async (req, res) => {
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { username } = req.body;
+
+    // Get full_name from admin_users
+    const { data: userData } = await supabase
+      .from('admin_users')
+      .select('full_name')
+      .eq('username', username)
+      .single();
+
+    const full_name = userData?.full_name || username;
+
     const { data, error } = await supabase
       .from('admin_logs')
-      .insert({ username, login_time: new Date().toISOString() })
+      .insert({ username, full_name, login_time: new Date().toISOString() })
       .select();
     if (error) throw error;
     res.json(data[0]);

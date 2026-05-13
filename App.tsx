@@ -1197,22 +1197,28 @@ export default function App() {
   };
 
   const deleteAdmin = async () => {
-    const username = prompt('Enter username of admin to delete:');
-    if (username && username !== 'super_lib') {
-      if (window.confirm(`Delete admin "${username}"? This cannot be undone.`)) {
-        try {
-          const res = await fetch(`/api/admin/users/${username}`, { method: 'DELETE' });
-          if (res.ok) {
-            showMsg('Admin deleted successfully');
-          } else {
-            showMsg('Failed to delete admin', 'error');
+    const fullName = prompt('Enter the FULL NAME of the admin to delete:');
+    if (fullName) {
+      const adminToDelete = adminList.find(admin => admin.full_name === fullName);
+      if (adminToDelete && adminToDelete.username !== 'super_lib') {
+        if (window.confirm(`Delete admin "${adminToDelete.full_name}" (${adminToDelete.username})? This cannot be undone.`)) {
+          try {
+            const res = await fetch(`/api/admin/users/${adminToDelete.username}`, { method: 'DELETE' });
+            if (res.ok) {
+              showMsg('Admin deleted successfully');
+              viewAdmins();
+            } else {
+              showMsg('Failed to delete admin', 'error');
+            }
+          } catch (err) {
+            showMsg('Error deleting admin', 'error');
           }
-        } catch (err) {
-          showMsg('Error deleting admin', 'error');
         }
+      } else if (adminToDelete?.username === 'super_lib') {
+        showMsg('Cannot delete the main Super Admin account', 'error');
+      } else {
+        showMsg(`No admin found with name "${fullName}"`, 'error');
       }
-    } else if (username === 'super_lib') {
-      showMsg('Cannot delete the main Super Admin account', 'error');
     }
   };
   // STUDENT ROUTES — No login required
@@ -1898,7 +1904,7 @@ export default function App() {
                   ) : (
                     adminLogs.map((log, index) => (
                       <tr key={index} className="hover:bg-zinc-800/30 transition-colors">
-                        <td className="py-3 px-4 text-white font-medium">{log.username}</td>
+                        <td className="py-3 px-4 text-white font-medium">{log.full_name || log.username}</td>
                         <td className="py-3 px-4 text-zinc-400">{format(new Date(log.login_time), 'MMM dd, HH:mm:ss')}</td>
                         <td className="py-3 px-4 text-zinc-400">
                           {log.logout_time ? format(new Date(log.logout_time), 'MMM dd, HH:mm:ss') : 'Still logged in'}
@@ -1989,8 +1995,8 @@ export default function App() {
                     ) : (
                       adminList.map((admin) => (
                         <div key={admin.username} className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl p-3">
-                          <p className="text-white font-medium">{admin.username}</p>
-                          <p className="text-zinc-500 text-xs">{admin.full_name || 'No name'}</p>
+                          <p className="text-white font-medium">{admin.full_name || admin.username}</p>
+                          <p className="text-zinc-500 text-xs">{admin.username}</p>
                           <span className={`text-xs px-2 py-0.5 rounded-full ${admin.role === 'SUPER_ADMIN'
                             ? 'bg-purple-500/10 text-purple-500'
                             : 'bg-emerald-500/10 text-emerald-500'
