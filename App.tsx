@@ -1268,22 +1268,9 @@ export default function App() {
       setIsAuthenticated(true);
       setUserRole(role);
       setCurrentUsername(username);
-
-      // Check if admin profile exists
-      try {
-        const res = await fetch(`/api/admin/profile/${username}`);
-        const data = await res.json();
-        if (!data.exists) {
-          setShowAdminRegModal(true);
-        } else {
-          setAdminProfile(data.profile);
-        }
-      } catch (err) {
-        console.error('Failed to check admin profile');
-      }
+      // Registration modal will be shown after personal sign in
     }} />;
   }
-
   if (userRole === 'VIEWER') {
     return <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">Access Denied. Admins only.</div>;
   }
