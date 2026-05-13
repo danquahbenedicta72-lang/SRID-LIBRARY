@@ -6,6 +6,7 @@ import {
   BarChart3,
   Shield,
   PlusCircle,
+  Eye,
   Search,
   LogOut,
   LogIn,
@@ -1991,8 +1992,8 @@ export default function App() {
                           <p className="text-white font-medium">{admin.username}</p>
                           <p className="text-zinc-500 text-xs">{admin.full_name || 'No name'}</p>
                           <span className={`text-xs px-2 py-0.5 rounded-full ${admin.role === 'SUPER_ADMIN'
-                              ? 'bg-purple-500/10 text-purple-500'
-                              : 'bg-emerald-500/10 text-emerald-500'
+                            ? 'bg-purple-500/10 text-purple-500'
+                            : 'bg-emerald-500/10 text-emerald-500'
                             }`}>
                             {admin.role || 'ADMIN'}
                           </span>
