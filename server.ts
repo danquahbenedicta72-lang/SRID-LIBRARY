@@ -177,20 +177,22 @@ app.post('/api/admin/personal-signin', async (req, res) => {
   try {
     const { name } = req.body;
 
-    // Check if this admin exists in admin_users by full_name
+    // ALWAYS generate username from the entered name
+    const generatedUsername = name.toLowerCase().replace(/\s/g, '_');
+
+    // Check if admin exists by generated username (not by full_name)
     let { data: existingAdmin } = await supabase
       .from('admin_users')
       .select('*')
-      .eq('full_name', name)
+      .eq('username', generatedUsername)
       .single();
 
-    // If not exists, auto-create admin account
+    // If not exists, create new admin account
     if (!existingAdmin) {
-      const username = name.toLowerCase().replace(/\s/g, '_');
       const { data: newAdmin, error: createError } = await supabase
         .from('admin_users')
         .insert({
-          username: username,
+          username: generatedUsername,
           password: 'default123',
           full_name: name,
           role: 'ADMIN'
@@ -205,11 +207,11 @@ app.post('/api/admin/personal-signin', async (req, res) => {
       }
     }
 
-    // Record the login in admin_logs
+    // ALWAYS create a log entry for EVERY personal sign-in
     const { data, error } = await supabase
       .from('admin_logs')
       .insert({
-        username: existingAdmin?.username || name.toLowerCase().replace(/\s/g, '_'),
+        username: generatedUsername,
         full_name: name,
         login_time: new Date().toISOString()
       })
