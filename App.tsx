@@ -423,11 +423,7 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole, username: string) =>
     e.preventDefault();
     const user = credentials[username];
     if (user && user.pass === password) {
-      await fetch('/api/admin/personal-signin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: username })
-      });
+
       onLogin(user.role, username);
     } else {
       setError('Invalid username or password');
