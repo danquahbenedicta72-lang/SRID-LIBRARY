@@ -1409,11 +1409,12 @@ export default function App() {
         isOpen={showAdminRegModal}
         onRegister={async ({ fullName, contact, email }) => {
           try {
+            const username = fullName.toLowerCase().replace(/\s/g, '_');
             const res = await fetch('/api/admin/profile', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                username: currentUsername,
+                username: username,
                 full_name: fullName,
                 contact: contact,
                 email: email
