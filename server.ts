@@ -158,6 +158,20 @@ app.post('/api/guest-visits', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// Delete a guest visit record
+app.delete('/api/guest-visits/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('guest_visits')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ========== SYSTEM ROUTES ==========
 app.post('/api/system/reset', async (req, res) => {

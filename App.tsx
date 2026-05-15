@@ -1866,13 +1866,14 @@ export default function App() {
                     <th className="py-3 px-4">Location</th>
                     <th className="py-3 px-4">Purpose</th>
                     <th className="py-3 px-4">Visit Date</th>
+                    <th className="py-3 px-4">Actions</th>  {/* ← ADD THIS LINE */}
                   </tr>
                 </thead>
 
                 <tbody className="text-sm divide-y divide-[#2a2a2a]">
                   {guests.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td>
+                      <td colSpan={7} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td>
                     </tr>
                   ) : (
                     guests.map((guest, index) => (
@@ -1883,6 +1884,29 @@ export default function App() {
                         <td className="py-3 px-4 text-zinc-400">{guest.location}</td>
                         <td className="py-3 px-4 text-zinc-400 italic">{guest.purpose}</td>
                         <td className="py-3 px-4 text-zinc-500 font-mono text-xs">{guest.visit_date}</td>
+                        <td className="py-3 px-4">
+                          <button
+                            onClick={async () => {
+                              if (window.confirm(`Delete guest record for ${guest.name}?`)) {
+                                try {
+                                  const res = await fetch(`/api/guest-visits/${guest.id}`, { method: 'DELETE' });
+                                  if (res.ok) {
+                                    showMsg('Guest record deleted');
+                                    fetchData();
+                                  } else {
+                                    showMsg('Failed to delete', 'error');
+                                  }
+                                } catch (err) {
+                                  showMsg('Delete failed', 'error');
+                                }
+                              }
+                            }}
+                            className="text-red-500 hover:text-red-400 transition-colors"
+                            title="Delete this guest record"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )}
