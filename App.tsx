@@ -1131,20 +1131,7 @@ export default function App() {
   };
   const handlePersonalSignIn = async (name: string) => {
     try {
-      // First, check if this name already exists in admin_profiles
-      const checkRes = await fetch(`/api/admin/profile-by-name/${encodeURIComponent(name)}`);
-      const checkData = await checkRes.json();
-
-      if (checkData.exists) {
-        // Name already registered - just sign in
-        setCurrentAdminName(name);
-        setIsPersonalSignedIn(true);
-        setShowNameModal(false);
-        showMsg(`Welcome back, ${name}!`);
-        return;
-      }
-
-      // Name not registered - auto-create and show registration modal
+      // ✅ FIX: ALWAYS call the API to create a log entry for EVERY sign-in
       const res = await fetch('/api/admin/personal-signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1155,11 +1142,17 @@ export default function App() {
         setCurrentAdminName(name);
         setIsPersonalSignedIn(true);
         setShowNameModal(false);
-        setShowAdminRegModal(true); // Show registration modal
-        await fetchData();
-        if (userRole === 'SUPER_ADMIN') {
-          viewAdmins();
+
+        // Check if profile exists to know whether to show registration modal
+        const checkRes = await fetch(`/api/admin/profile-by-name/${encodeURIComponent(name)}`);
+        const checkData = await checkRes.json();
+
+        if (!checkData.exists) {
+          setShowAdminRegModal(true);
         }
+
+        await fetchData();
+        showMsg(`Welcome, ${name}!`);
       }
     } catch (err) {
       console.error('Failed to record login');
