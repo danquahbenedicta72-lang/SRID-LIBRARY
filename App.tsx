@@ -1161,10 +1161,13 @@ export default function App() {
   };
   const handlePersonalSignOut = async () => {
     try {
+      // Convert human name to username format (e.g., "Betty Ansah" -> "betty_ansah")
+      const username = currentAdminName.toLowerCase().replace(/\s/g, '_');
+
       await fetch('/api/admin/logout', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: currentAdminName })
+        body: JSON.stringify({ username: username })
       });
 
       setIsPersonalSignedIn(false);
