@@ -242,12 +242,15 @@ app.put('/api/admin/logout', async (req, res) => {
 
 // Get all admin logs
 // Get all admin logs (only show entries with human names)
+// Get all admin logs - Only show entries with real human names
 app.get('/api/admin/logs', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('admin_logs')
       .select('*')
-      .not('full_name', 'is', null)  // ← ONLY show records that have a full_name
+      .not('full_name', 'is', null)
+      .neq('username', 'srid_lib')
+      .neq('username', 'super_lib')
       .order('login_time', { ascending: false });
     if (error) throw error;
     res.json(data || []);
