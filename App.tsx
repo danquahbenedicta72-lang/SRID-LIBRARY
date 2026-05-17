@@ -2100,8 +2100,9 @@ export default function App() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="grid md:grid-cols-2 gap-8"
+            className="grid md:grid-cols-3 gap-8"
           >
+            {/* Card 1: Self-Check Terminal (Student Check-In/Out) */}
             <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
               <div className="bg-emerald-500/10 p-4 rounded-3xl mb-6">
                 <QrCode className="w-12 h-12 text-emerald-500" />
@@ -2110,7 +2111,7 @@ export default function App() {
               <p className="text-zinc-500 text-sm mb-8">Scan to Arrive or Leave without Librarian assistance</p>
 
               <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
-                <QRCodeSVG value={scanUrl} size={250} level="H" />
+                <QRCodeSVG value={scanUrl} size={200} level="H" />
               </div>
 
               <div className="flex flex-col gap-2 w-full">
@@ -2125,6 +2126,7 @@ export default function App() {
               </div>
             </div>
 
+            {/* Card 2: Student Registration */}
             <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
               <div className="bg-blue-500/10 p-4 rounded-3xl mb-6">
                 <Users className="w-12 h-12 text-blue-500" />
@@ -2133,7 +2135,7 @@ export default function App() {
               <p className="text-zinc-500 text-sm mb-8">Scan to register as a new library member</p>
 
               <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
-                <QRCodeSVG value={registerUrl} size={250} level="H" />
+                <QRCodeSVG value={registerUrl} size={200} level="H" />
               </div>
 
               <div className="flex flex-col gap-2 w-full">
@@ -2151,9 +2153,36 @@ export default function App() {
                 <strong>Requirement:</strong> Provide this QR code to students at the entrance. They can register using their own smartphones.
               </div>
             </div>
+
+            {/* Card 3: Guest Registration (NEW) */}
+            <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
+              <div className="bg-purple-500/10 p-4 rounded-3xl mb-6">
+                <Users className="w-12 h-12 text-purple-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Guest Registration</h2>
+              <p className="text-zinc-500 text-sm mb-8">Scan to register as a library guest</p>
+
+              <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
+                <QRCodeSVG value={`${baseUrl}guest`} size={200} level="H" />
+              </div>
+
+              <div className="flex flex-col gap-2 w-full">
+                <a
+                  href={`${baseUrl}guest`}
+                  target="_blank"
+                  className="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-xl transition-all font-bold"
+                >
+                  <Smartphone className="w-4 h-4" /> Open Guest Registration
+                </a>
+                <p className="text-[10px] text-zinc-600 font-mono break-all">{`${baseUrl}guest`}</p>
+              </div>
+
+              <div className="mt-6 bg-purple-900/10 text-purple-400 px-6 py-4 rounded-2xl text-xs border border-purple-900/20 w-full text-left">
+                <strong>For Guests:</strong> Scan this QR code to register yourself. No login required.
+              </div>
+            </div>
           </motion.div>
         )}
-
         {activeTab === 'analytics' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
