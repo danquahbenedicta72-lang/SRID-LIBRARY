@@ -1001,11 +1001,7 @@ export default function App() {
       const res = await fetch('/api/attendance/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentRef: refNo,
-          action: reqAction,
-          purpose: purpose
-        })
+        body: JSON.stringify({ studentRef: refNo, action: reqAction, purpose: purpose })
       });
 
       const data = await res.json();
@@ -1013,11 +1009,20 @@ export default function App() {
 
       if (res.ok) {
         showMsg(`Successfully processed ${reqAction}`);
-        await fetchData(); // Wait for data to refresh
+
+        // 🔑 FIX: Force complete data refresh
+        await fetchData();
+
+        // Clear the form
         setSearchTerm('');
         setPurpose('');
-        // Refresh the attendance display
-        setActiveTab('attendance'); // Force re-render
+
+        // 🔑 FIX: Force UI to refresh by toggling tabs
+        setActiveTab('students');
+        setTimeout(() => {
+          setActiveTab('attendance');
+        }, 50);
+
       } else {
         showMsg(data.error || 'Attendance update failed', 'error');
       }
@@ -1026,7 +1031,6 @@ export default function App() {
       showMsg('Attendance update failed', 'error');
     }
   };
-
   const dropStudent = async (refNo: string) => {
     try {
       const res = await fetch(`/api/students/${refNo}/drop`, { method: 'POST' });
