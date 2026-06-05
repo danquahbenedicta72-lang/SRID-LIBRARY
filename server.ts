@@ -138,7 +138,7 @@ app.post('/api/attendance/action', async (req, res) => {
         studentRef,
         date: today,
         checkIn: new Date().toISOString(),
-        purpose: purpose || null
+        purpose: purpose || 'General Study'
       });
       
       if (error) throw error;
