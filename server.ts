@@ -379,19 +379,20 @@ app.delete('/api/admin/users/:username', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// Promote all students to next year
+// Promote all students to next year (DELETE Year 4 students)
 app.post('/api/students/promote', async (req, res) => {
   try {
     const { data: students, error: fetchError } = await supabase.from('students').select('*');
     if (fetchError) throw fetchError;
     
     let promoted = 0;
-    let remainingYear4 = 0;
+    let deleted = 0;
     
     for (const student of students) {
       let newYear = parseInt(student.year);
       
       if (newYear >= 1 && newYear <= 3) {
+        // Promote Year 1,2,3 to next year
         newYear++;
         const { error: updateError } = await supabase
           .from('students')
@@ -400,11 +401,21 @@ app.post('/api/students/promote', async (req, res) => {
         
         if (!updateError) promoted++;
       } else if (newYear === 4) {
-        remainingYear4++;
+        // DELETE Year 4 students (graduated)
+        const { error: deleteError } = await supabase
+          .from('students')
+          .delete()
+          .eq('refNo', student.refNo);
+        
+        // Also delete their attendance records
+        if (!deleteError) {
+          await supabase.from('attendance').delete().eq('studentRef', student.refNo);
+          deleted++;
+        }
       }
     }
     
-    res.json({ success: true, promoted, remainingYear4 });
+    res.json({ success: true, promoted, deleted });
   } catch (err: any) {
     console.error('Promote error:', err);
     res.status(500).json({ error: err.message });

@@ -1774,7 +1774,7 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
         const res = await fetch('/api/students/promote', { method: 'POST' });
         if (res.ok) {
           const result = await res.json();
-          showMsg(`✅ Promoted: ${result.promoted} students | Year 4: ${result.remainingYear4} stayed`);
+showMsg(`✅ Promoted: ${result.promoted} students | Deleted: ${result.deleted} graduated students`);
           fetchData();
         } else {
           showMsg('Failed to promote students', 'error');
