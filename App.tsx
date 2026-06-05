@@ -992,7 +992,7 @@ export default function App() {
       showMsg('Registration failed', 'error');
     }
   };
- const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-out') => {
+const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-out') => {
   try {
     const reqAction = actionType === 'check-in' ? 'Arrive' : 'Leave';
     console.log(`Attempting ${reqAction} for student: ${refNo}, purpose: ${purpose}`);
@@ -1009,25 +1009,16 @@ export default function App() {
     if (res.ok) {
       showMsg(`Successfully processed ${reqAction}`);
       
-      // 🔑 FIX: Directly fetch and set attendance state
       const freshRes = await fetch('/api/attendance', { 
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' }
       });
       const freshData = await freshRes.json();
-      console.log('Fetched fresh attendance:', freshData.length, 'records');
       setAttendance(freshData);
       
-      // Clear form fields
       setSearchTerm('');
       setPurpose('');
-
-      // Force UI refresh by switching tabs
-      setActiveTab('students');
-      setTimeout(() => {
-        setActiveTab('attendance');
-      }, 50);
-
+      
     } else {
       showMsg(data.error || 'Attendance update failed', 'error');
     }
