@@ -99,24 +99,29 @@ app.post('/api/students/bulk', async (req, res) => {
 // ========== ATTENDANCE ROUTES ==========
 app.get('/api/attendance', async (req, res) => {
   try {
+    // Fetch attendance records
     const { data: attendanceData, error: attError } = await supabase.from('attendance').select('*');
     if (attError) throw attError;
-    const { data: studentsData, error: stuError } = await supabase.from('students').select('refNo, year, programme, name');
+    
+    // Fetch students to get names
+    const { data: studentsData, error: stuError } = await supabase.from('students').select('refNo, name');
     if (stuError) throw stuError;
-    const studentsMap = new Map();
-    studentsData.forEach(s => studentsMap.set(s.refNo, { year: s.year, programme: s.programme, name: s.name }));
+    
+    // Create a map for quick lookup
+    const studentMap = new Map();
+    studentsData.forEach(s => studentMap.set(s.refNo, s.name));
+    
+    // Enrich attendance with student names
     const enriched = attendanceData.map(record => ({
       ...record,
-      year: studentsMap.get(record.studentRef)?.year,
-      programme: studentsMap.get(record.studentRef)?.programme,
-      name: studentsMap.get(record.studentRef)?.name
+      name: studentMap.get(record.studentRef) || 'Unknown Student'
     }));
+    
     res.json(enriched);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
-
 app.post('/api/attendance/action', async (req, res) => {
   try {
     const { studentRef, action, purpose } = req.body;
