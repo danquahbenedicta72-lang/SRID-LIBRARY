@@ -1765,6 +1765,27 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
                     >
                       <Upload className="w-3 h-3" /> Import CSV
                     </button>
+                    <button
+  onClick={async () => {
+    if (window.confirm('⚠️ PROMOTE ALL STUDENTS?\n\nYear 1 → Year 2\nYear 2 → Year 3\nYear 3 → Year 4\n\nYear 4 students will remain in Year 4.\n\nThis action cannot be undone. Continue?')) {
+      try {
+        const res = await fetch('/api/students/promote', { method: 'POST' });
+        if (res.ok) {
+          const result = await res.json();
+          showMsg(`✅ Promoted: ${result.promoted} students | Year 4: ${result.remainingYear4} stayed`);
+          fetchData();
+        } else {
+          showMsg('Failed to promote students', 'error');
+        }
+      } catch (err) {
+        showMsg('Network error', 'error');
+      }
+    }
+  }}
+  className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+>
+  <LogIn className="w-3 h-3" /> Promote All Students
+</button>
                     <span className="text-xs font-mono text-zinc-600">{students.length} Registered</span>
                   </div>
                 </div>

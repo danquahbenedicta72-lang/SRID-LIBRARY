@@ -379,6 +379,37 @@ app.delete('/api/admin/users/:username', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// Promote all students to next year
+app.post('/api/students/promote', async (req, res) => {
+  try {
+    const { data: students, error: fetchError } = await supabase.from('students').select('*');
+    if (fetchError) throw fetchError;
+    
+    let promoted = 0;
+    let remainingYear4 = 0;
+    
+    for (const student of students) {
+      let newYear = parseInt(student.year);
+      
+      if (newYear >= 1 && newYear <= 3) {
+        newYear++;
+        const { error: updateError } = await supabase
+          .from('students')
+          .update({ year: newYear.toString() })
+          .eq('refNo', student.refNo);
+        
+        if (!updateError) promoted++;
+      } else if (newYear === 4) {
+        remainingYear4++;
+      }
+    }
+    
+    res.json({ success: true, promoted, remainingYear4 });
+  } catch (err: any) {
+    console.error('Promote error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // ========== STATIC FILES ==========
 app.use(express.static(distPath));
