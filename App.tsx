@@ -1587,7 +1587,11 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
                       </tr>
                     </thead>
                     <tbody className="text-sm divide-y divide-[#2a2a2a]">
-                      {(attendance || []).filter(a => a.date === new Date().toISOString().split('T')[0]).map(record => (
+{(attendance || []).filter((record) => {
+  const today = new Date().toISOString().split('T')[0];
+  const recordDate = record.date ? record.date.split('T')[0] : '';
+  return recordDate === today;
+}).map((record) => (
                         <tr key={record.id} className="hover:bg-zinc-800/30 transition-colors group">
                           <td className="py-4 px-4">
                             <div>
