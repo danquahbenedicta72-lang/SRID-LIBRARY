@@ -1009,15 +1009,25 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
     if (res.ok) {
       showMsg(`Successfully processed ${reqAction}`);
       
+      // Force refresh data from server
       const freshRes = await fetch('/api/attendance', { 
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' }
       });
       const freshData = await freshRes.json();
+      console.log('Fresh data from server:', freshData.length, 'records');
       setAttendance(freshData);
       
+      // Clear inputs
       setSearchTerm('');
       setPurpose('');
+      
+      // Force UI re-render by toggling tab
+      const currentTab = activeTab;
+      setActiveTab('students');
+      setTimeout(() => {
+        setActiveTab(currentTab);
+      }, 50);
       
     } else {
       showMsg(data.error || 'Attendance update failed', 'error');

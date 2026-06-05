@@ -29,7 +29,6 @@ app.get('/guest', (req, res) => {
 
 // ========== STUDENT ROUTES ==========
 
-
 app.get('/api/students', async (req, res) => {
   try {
     const { data, error } = await supabase.from('students').select('*');
@@ -99,43 +98,68 @@ app.post('/api/students/bulk', async (req, res) => {
 // ========== ATTENDANCE ROUTES ==========
 app.get('/api/attendance', async (req, res) => {
   try {
-    // Fetch attendance records
     const { data: attendanceData, error: attError } = await supabase.from('attendance').select('*');
     if (attError) throw attError;
-    
-    // Fetch students to get names
     const { data: studentsData, error: stuError } = await supabase.from('students').select('refNo, name');
     if (stuError) throw stuError;
-    
-    // Create a map for quick lookup
     const studentMap = new Map();
     studentsData.forEach(s => studentMap.set(s.refNo, s.name));
-    
-    // Enrich attendance with student names
     const enriched = attendanceData.map(record => ({
       ...record,
       name: studentMap.get(record.studentRef) || 'Unknown Student'
     }));
-    
     res.json(enriched);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ========== FIXED ATTENDANCE ACTION ENDPOINT ==========
 app.post('/api/attendance/action', async (req, res) => {
   try {
     const { studentRef, action, purpose } = req.body;
     const today = new Date().toISOString().split('T')[0];
+    
     if (action === 'Arrive') {
-      await supabase.from('attendance').insert({ studentRef, date: today, checkIn: new Date().toISOString(), purpose: purpose || null });
+      // Check if student already has an active session today
+      const { data: existing } = await supabase
+        .from('attendance')
+        .select('*')
+        .eq('studentRef', studentRef)
+        .eq('date', today)
+        .is('checkOut', null)
+        .single();
+      
+      if (existing) {
+        return res.json({ success: true, message: 'Already checked in' });
+      }
+      
+      const { error } = await supabase.from('attendance').insert({
+        studentRef,
+        date: today,
+        checkIn: new Date().toISOString(),
+        purpose: purpose || null
+      });
+      
+      if (error) throw error;
       res.json({ success: true });
+      
     } else if (action === 'Leave') {
-      await supabase.from('attendance').update({ checkOut: new Date().toISOString() }).eq('studentRef', studentRef).eq('date', today).is('checkOut', null);
+      const { error } = await supabase
+        .from('attendance')
+        .update({ checkOut: new Date().toISOString() })
+        .eq('studentRef', studentRef)
+        .eq('date', today)
+        .is('checkOut', null);
+      
+      if (error) throw error;
       res.json({ success: true });
+      
     } else {
       res.status(400).json({ error: 'Invalid action' });
     }
   } catch (err: any) {
+    console.error('Attendance action error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -163,14 +187,11 @@ app.post('/api/guest-visits', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// Delete a guest visit record
+
 app.delete('/api/guest-visits/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase
-      .from('guest_visits')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('guest_visits').delete().eq('id', id);
     if (error) throw error;
     res.json({ success: true });
   } catch (err: any) {
@@ -189,24 +210,17 @@ app.post('/api/system/reset', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// ========== ADMIN LOGS ROUTES ==========
 
-// Record admin login
+// ========== ADMIN LOGS ROUTES ==========
 app.post('/api/admin/personal-signin', async (req, res) => {
   try {
     const { name } = req.body;
-
-    // ALWAYS generate username from the entered name
     const generatedUsername = name.toLowerCase().replace(/\s/g, '_');
-
-    // Check if admin exists by generated username (not by full_name)
     let { data: existingAdmin } = await supabase
       .from('admin_users')
       .select('*')
       .eq('username', generatedUsername)
       .single();
-
-    // If not exists, create new admin account
     if (!existingAdmin) {
       const { data: newAdmin, error: createError } = await supabase
         .from('admin_users')
@@ -218,15 +232,12 @@ app.post('/api/admin/personal-signin', async (req, res) => {
         })
         .select()
         .single();
-
       if (createError) {
         console.error('Error creating admin:', createError);
       } else {
         existingAdmin = newAdmin;
       }
     }
-
-    // ALWAYS create a log entry for EVERY personal sign-in
     const { data, error } = await supabase
       .from('admin_logs')
       .insert({
@@ -235,7 +246,6 @@ app.post('/api/admin/personal-signin', async (req, res) => {
         login_time: new Date().toISOString()
       })
       .select();
-
     if (error) throw error;
     res.json({ success: true, admin: existingAdmin });
   } catch (err: any) {
@@ -243,7 +253,7 @@ app.post('/api/admin/personal-signin', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// Record admin logout
+
 app.put('/api/admin/logout', async (req, res) => {
   try {
     const { username } = req.body;
@@ -261,9 +271,6 @@ app.put('/api/admin/logout', async (req, res) => {
   }
 });
 
-// Get all admin logs
-// Get all admin logs (only show entries with human names)
-// Get all admin logs - Only show entries with real human names
 app.get('/api/admin/logs', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -279,14 +286,11 @@ app.get('/api/admin/logs', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// Delete admin log record
+
 app.delete('/api/admin/logs/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase
-      .from('admin_logs')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('admin_logs').delete().eq('id', id);
     if (error) throw error;
     res.json({ success: true });
   } catch (err: any) {
@@ -295,7 +299,6 @@ app.delete('/api/admin/logs/:id', async (req, res) => {
 });
 
 // ========== ADMIN PROFILE ROUTES ==========
-// Check if profile exists by full_name
 app.get('/api/admin/profile-by-name/:name', async (req, res) => {
   try {
     const { name } = req.params;
@@ -305,7 +308,6 @@ app.get('/api/admin/profile-by-name/:name', async (req, res) => {
       .select('*')
       .eq('full_name', decodedName)
       .single();
-
     if (error && error.code !== 'PGRST116') throw error;
     res.json({ exists: !!data, profile: data });
   } catch (err: any) {
@@ -313,7 +315,6 @@ app.get('/api/admin/profile-by-name/:name', async (req, res) => {
   }
 });
 
-// Check if admin profile exists
 app.get('/api/admin/profile/:username', async (req, res) => {
   try {
     const { username } = req.params;
@@ -322,7 +323,6 @@ app.get('/api/admin/profile/:username', async (req, res) => {
       .select('*')
       .eq('username', username)
       .single();
-
     if (error && error.code !== 'PGRST116') throw error;
     res.json({ exists: !!data, profile: data });
   } catch (err: any) {
@@ -330,7 +330,6 @@ app.get('/api/admin/profile/:username', async (req, res) => {
   }
 });
 
-// Create admin profile
 app.post('/api/admin/profile', async (req, res) => {
   try {
     const { username, full_name, contact, email } = req.body;
@@ -344,15 +343,11 @@ app.post('/api/admin/profile', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// ========== ADMIN USER MANAGEMENT (SUPER ADMIN ONLY) ==========
 
-// Get all admin users
+// ========== ADMIN USER MANAGEMENT ==========
 app.get('/api/admin/users', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('admin_users')
-      .select('*')
-      .order('created_at', { ascending: true });
+    const { data, error } = await supabase.from('admin_users').select('*').order('created_at', { ascending: true });
     if (error) throw error;
     res.json(data || []);
   } catch (err: any) {
@@ -360,7 +355,6 @@ app.get('/api/admin/users', async (req, res) => {
   }
 });
 
-// Create new admin user
 app.post('/api/admin/users', async (req, res) => {
   try {
     const { username, password, full_name, contact, email } = req.body;
@@ -375,14 +369,10 @@ app.post('/api/admin/users', async (req, res) => {
   }
 });
 
-// Delete admin user
 app.delete('/api/admin/users/:username', async (req, res) => {
   try {
     const { username } = req.params;
-    const { error } = await supabase
-      .from('admin_users')
-      .delete()
-      .eq('username', username);
+    const { error } = await supabase.from('admin_users').delete().eq('username', username);
     if (error) throw error;
     res.json({ success: true });
   } catch (err: any) {
@@ -399,7 +389,7 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3002;
-console.log('🔥 SERVER RESTARTED WITH DELETE ENDPOINT - PORT:', PORT);
+console.log('🔥 SERVER RESTARTED - PORT:', PORT);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log('Supabase connected');
