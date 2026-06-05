@@ -992,50 +992,50 @@ export default function App() {
       showMsg('Registration failed', 'error');
     }
   };
-  const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-out') => {
-    try {
-      const reqAction = actionType === 'check-in' ? 'Arrive' : 'Leave';
-      console.log(`Attempting ${reqAction} for student: ${refNo}, purpose: ${purpose}`);
+ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-out') => {
+  try {
+    const reqAction = actionType === 'check-in' ? 'Arrive' : 'Leave';
+    console.log(`Attempting ${reqAction} for student: ${refNo}, purpose: ${purpose}`);
 
-      const res = await fetch('/api/attendance/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentRef: refNo,
-          action: reqAction,
-          purpose: purpose
-        })
+    const res = await fetch('/api/attendance/action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentRef: refNo, action: reqAction, purpose: purpose })
+    });
+
+    const data = await res.json();
+    console.log('API Response:', data);
+
+    if (res.ok) {
+      showMsg(`Successfully processed ${reqAction}`);
+      
+      // 🔑 FIX: Directly fetch and set attendance state
+      const freshRes = await fetch('/api/attendance', { 
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
       });
+      const freshData = await freshRes.json();
+      console.log('Fetched fresh attendance:', freshData.length, 'records');
+      setAttendance(freshData);
+      
+      // Clear form fields
+      setSearchTerm('');
+      setPurpose('');
 
-      const data = await res.json();
-      console.log('API Response:', data);
+      // Force UI refresh by switching tabs
+      setActiveTab('students');
+      setTimeout(() => {
+        setActiveTab('attendance');
+      }, 50);
 
-      if (res.ok) {
-        showMsg(`Successfully processed ${reqAction}`);
-
-        // Clear form fields
-        setSearchTerm('');
-        setPurpose('');
-
-        // Refresh data from server
-        await fetchData();
-
-        // Force UI refresh by switching tabs away and back
-        setActiveTab('students');
-
-        setTimeout(() => {
-          setActiveTab('attendance');
-        }, 100);
-
-      } else {
-        showMsg(data.error || 'Attendance update failed', 'error');
-      }
-    } catch (err) {
-      console.error('Attendance error:', err);
-      showMsg('Attendance update failed', 'error');
+    } else {
+      showMsg(data.error || 'Attendance update failed', 'error');
     }
-  };
-
+  } catch (err) {
+    console.error('Attendance error:', err);
+    showMsg('Attendance update failed', 'error');
+  }
+};
   const dropStudent = async (refNo: string) => {
     try {
       const res = await fetch(`/api/students/${refNo}/drop`, { method: 'POST' });
