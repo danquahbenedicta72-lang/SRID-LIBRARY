@@ -1767,14 +1767,23 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
                     >
                       <Upload className="w-3 h-3" /> Import CSV
                     </button>
-                    <button
+                   <button
   onClick={async () => {
-    if (window.confirm('⚠️ PROMOTE ALL STUDENTS?\n\nYear 1 → Year 2\nYear 2 → Year 3\nYear 3 → Year 4\n\nYear 4 students will remain in Year 4.\n\nThis action cannot be undone. Continue?')) {
+    // Step 1: Ask for confirmation password
+    const confirmation = prompt('⚠️ DANGER: This will promote ALL students to the next year.\n\nYear 1 → Year 2\nYear 2 → Year 3\nYear 3 → Year 4\n\n⚠️ Year 4 students will be DELETED permanently!\n\nType "PROMOTE" to confirm:');
+    
+    if (confirmation !== 'PROMOTE') {
+      showMsg('❌ Promotion cancelled - Incorrect confirmation word', 'error');
+      return;
+    }
+    
+    // Step 2: Final warning
+    if (window.confirm('⚠️ FINAL WARNING: This action cannot be undone. Are you absolutely sure?')) {
       try {
         const res = await fetch('/api/students/promote', { method: 'POST' });
         if (res.ok) {
           const result = await res.json();
-showMsg(`✅ Promoted: ${result.promoted} students | Deleted: ${result.deleted} graduated students`);
+          showMsg(`✅ Promoted: ${result.promoted} students | Deleted: ${result.deleted} graduated students`);
           fetchData();
         } else {
           showMsg('Failed to promote students', 'error');
@@ -1782,6 +1791,8 @@ showMsg(`✅ Promoted: ${result.promoted} students | Deleted: ${result.deleted} 
       } catch (err) {
         showMsg('Network error', 'error');
       }
+    } else {
+      showMsg('Promotion cancelled', 'error');
     }
   }}
   className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
