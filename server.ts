@@ -167,7 +167,10 @@ app.post('/api/attendance/action', async (req, res) => {
 // ========== GUEST VISITS API ROUTES ==========
 app.get('/api/guest-visits', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('guest_visits').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('guest_visits')
+      .select('id, name, purpose, visit_date, time_in, time_out, contact, occupation, location')
+      .order('created_at', { ascending: false });
     if (error) throw error;
     res.json(data || []);
   } catch (err: any) {
@@ -198,7 +201,94 @@ app.delete('/api/guest-visits/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ========== GUEST ATTENDANCE (CHECK-IN/OUT) ROUTES ==========
+app.post('/api/guest-attendance/checkin', async (req, res) => {
+  try {
+    const { name, purpose } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+    
+    const now = new Date();
+    const timeIn = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const visitDate = now.toISOString().split('T')[0];
+    
+    // Check if guest already has active session
+    const { data: existing } = await supabase
+      .from('guest_visits')
+      .select('*')
+      .eq('name', name)
+      .is('check_out', null)
+      .single();
+    
+    if (existing) {
+      return res.status(400).json({ error: 'Guest already has an active session. Please check out first.' });
+    }
+    
+    // Insert check-in record
+    const { data, error } = await supabase
+      .from('guest_visits')
+      .insert({
+        name: name,
+        purpose: purpose || 'Study',
+        check_in: now.toISOString(),
+        time_in: timeIn,
+        visit_date: visitDate
+      })
+      .select();
+    
+    if (error) throw error;
+    res.json({ success: true, message: 'Guest checked in successfully', data: data[0] });
+    
+  } catch (err: any) {
+    console.error('Check-in error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
+app.post('/api/guest-attendance/checkout-by-name', async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+    
+    const now = new Date();
+    const timeOut = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    // Find active session and update
+    const { data: existing, error: findError } = await supabase
+      .from('guest_visits')
+      .select('id')
+      .eq('name', name)
+      .is('check_out', null)
+      .order('check_in', { ascending: false })
+      .limit(1);
+    
+    if (findError) throw findError;
+    
+    if (!existing || existing.length === 0) {
+      return res.status(404).json({ error: 'No active session found for this guest' });
+    }
+    
+    const { error } = await supabase
+      .from('guest_visits')
+      .update({ 
+        check_out: now.toISOString(),
+        time_out: timeOut
+      })
+      .eq('id', existing[0].id);
+    
+    if (error) throw error;
+    res.json({ success: true, message: 'Guest checked out successfully' });
+    
+  } catch (err: any) {
+    console.error('Check-out error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ========== SYSTEM ROUTES ==========
 app.post('/api/system/reset', async (req, res) => {
   try {

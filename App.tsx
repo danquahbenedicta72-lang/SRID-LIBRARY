@@ -2125,21 +2125,23 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
-                  <tr>
-                    <th className="py-3 px-4">Name</th>
-                    <th className="py-3 px-4">Phone</th>
-                    <th className="py-3 px-4">Occupation</th>
-                    <th className="py-3 px-4">Location</th>
-                    <th className="py-3 px-4">Purpose</th>
-                    <th className="py-3 px-4">Visit Date</th>
-                    <th className="py-3 px-4">Actions</th>  {/* ← ADD THIS LINE */}
-                  </tr>
-                </thead>
+  <tr>
+    <th className="py-3 px-4">Name</th>
+    <th className="py-3 px-4">Phone</th>
+    <th className="py-3 px-4">Occupation</th>
+    <th className="py-3 px-4">Location</th>
+    <th className="py-3 px-4">Purpose</th>
+    <th className="py-3 px-4">Visit Date</th>
+    <th className="py-3 px-4">Time In</th>
+    <th className="py-3 px-4">Time Out</th>
+    <th className="py-3 px-4">Actions</th>
+  </tr>
+</thead>
 
                 <tbody className="text-sm divide-y divide-[#2a2a2a]">
                   {guests.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td>
+                    <td colSpan={9} className="py-8 text-center text-zinc-600 italic">No guest visits recorded yet.</td> 
                     </tr>
                   ) : (
                     guests.map((guest, index) => (
@@ -2149,8 +2151,9 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
                         <td className="py-3 px-4 text-zinc-400">{guest.occupation || '-'}</td>
                         <td className="py-3 px-4 text-zinc-400">{guest.location}</td>
                         <td className="py-3 px-4 text-zinc-400 italic">{guest.purpose}</td>
-                        <td className="py-3 px-4 text-zinc-500 font-mono text-xs">{guest.visit_date}</td>
-                        <td className="py-3 px-4">
+          <td className="py-3 px-4 text-zinc-500 font-mono text-xs">{guest.visit_date}</td>
+<td className="py-3 px-4 text-zinc-500 font-mono text-xs">{guest.time_in || '-'}</td>
+<td className="py-3 px-4 text-zinc-500 font-mono text-xs">{guest.time_out || '-'}</td>                        <td className="py-3 px-4">
                           <button
                             onClick={async () => {
                               if (window.confirm(`Delete guest record for ${guest.name}?`)) {
