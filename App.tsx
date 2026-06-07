@@ -292,7 +292,211 @@ const StudentMode = () => {
     </div>
   )
 }
+// Guest Kiosk Mode Component (Updated - Same flow as Student Mode)
+const GuestKioskMode = () => {
+  const [step, setStep] = useState<'name' | 'action' | 'success'>('name');
+  const [guestName, setGuestName] = useState('');
+  const [action, setAction] = useState<'Arrive' | 'Leave' | null>(null);
+  const [purpose, setPurpose] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
+  const purposeOptions = ['Study', 'Research', 'Borrow Books', 'Return Books', 'Meeting', 'Other'];
+
+  const handleNext = () => {
+    if (!guestName.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
+    setError('');
+    setStep('action');
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      if (action === 'Arrive') {
+        const res = await fetch('/api/guest-attendance/checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: guestName, purpose })
+        });
+        if (res.ok) {
+          setStep('success');
+        } else {
+          const err = await res.json();
+          setError(err.error);
+        }
+      } else if (action === 'Leave') {
+        const res = await fetch('/api/guest-attendance/checkout-by-name', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: guestName })
+        });
+        if (res.ok) {
+          setStep('success');
+        } else {
+          const err = await res.json();
+          setError(err.error);
+        }
+      }
+    } catch (e) {
+      setError('Failed to submit.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500"></div>
+
+        <div className="flex flex-col items-center text-center mb-8">
+          <img
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            alt="UMaT Logo"
+            className="w-16 h-16 object-contain mb-4"
+          />
+          <h1 className="text-2xl font-bold tracking-tight">Guest Kiosk Terminal</h1>
+          <p className="text-zinc-500 text-sm">Enter your name to check in or out</p>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {step === 'name' && (
+            <motion.div
+              key="step-name"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              <div className="space-y-2">
+                <label className="text-xs font-mono uppercase text-zinc-500 tracking-widest">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value.toUpperCase())}
+                  className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-2xl py-4 px-6 text-xl text-center focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-zinc-800"
+                  autoFocus
+                />
+                {error && <p className="text-red-500 text-xs text-center mt-2 flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3" /> {error}</p>}
+              </div>
+              <button
+                disabled={!guestName.trim() || loading}
+                onClick={handleNext}
+                className="w-full bg-white text-black font-bold py-4 rounded-2xl hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                Continue <ChevronLeft className="w-5 h-5 rotate-180" />
+              </button>
+            </motion.div>
+          )}
+
+          {step === 'action' && (
+            <motion.div
+              key="step-action"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              <div className="bg-[#1e1e1e] p-4 rounded-2xl border border-[#2a2a2a]">
+                <p className="text-xs font-mono text-purple-500 mb-1">Welcome,</p>
+                <p className="text-xl font-bold">{guestName}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setAction('Arrive')}
+                  className={`py-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${action === 'Arrive' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-[#1e1e1e] border-[#2a2a2a] text-zinc-400'
+                    }`}
+                >
+                  <LogIn className="w-8 h-8" />
+                  <span className="font-bold">Arrive</span>
+                </button>
+                <button
+                  onClick={() => setAction('Leave')}
+                  className={`py-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${action === 'Leave' ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-[#1e1e1e] border-[#2a2a2a] text-zinc-400'
+                    }`}
+                >
+                  <LogOut className="w-8 h-8" />
+                  <span className="font-bold">Leave</span>
+                </button>
+              </div>
+
+              {action === 'Arrive' && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="space-y-2">
+                  <label className="text-xs font-mono text-zinc-500">Purpose of Visit</label>
+                  <select
+                    value={purpose}
+                    onChange={(e) => setPurpose(e.target.value)}
+                    className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                  >
+                    <option value="">Select purpose...</option>
+                    {purposeOptions.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </motion.div>
+              )}
+
+              {error && <p className="text-red-500 text-xs text-center flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3" /> {error}</p>}
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setStep('name')}
+                  className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 rounded-2xl transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  disabled={!action || (action === 'Arrive' && !purpose) || loading}
+                  onClick={handleSubmit}
+                  className="flex-2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {loading ? 'Processing...' : 'Submit'}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 'success' && (
+            <motion.div
+              key="step-success"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-6"
+            >
+              <div className="bg-emerald-500/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Successfully Recorded</h2>
+                <p className="text-zinc-500 mt-2">Thank you for visiting the library!</p>
+              </div>
+              <button
+                onClick={() => {
+                  setStep('name');
+                  setGuestName('');
+                  setPurpose('');
+                  setAction(null);
+                }}
+                className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 rounded-2xl"
+              >
+                Done
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+};
 const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
   const [formData, setFormData] = useState<Partial<Student>>({
     year: '1',
@@ -851,7 +1055,7 @@ export default function App() {
   const [showAdminRegModal, setShowAdminRegModal] = useState(false);
   const [adminProfile, setAdminProfile] = useState<any>(null);
 
-  const [view, setView] = useState<'admin' | 'scan' | 'register'>('admin');
+ const [view, setView] = useState<'admin' | 'scan' | 'register' | 'guest-kiosk'>('admin'); 
 
   const [newStudent, setNewStudent] = useState<Partial<Student>>({
     year: '1',
@@ -946,18 +1150,19 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchData();
-    const updateView = () => {
-      const hash = window.location.hash;
-      if (hash === '#scan') setView('scan');
-      else if (hash === '#register') setView('register');
-      else if (hash === '#admin') setView('admin');
-      else setView('scan');
-    }
-    updateView();
-    window.addEventListener('hashchange', updateView);
-    return () => window.removeEventListener('hashchange', updateView);
-  }, []);
+  const updateView = () => {
+    const hash = window.location.hash;
+    if (hash === '#admin') setView('admin');
+    else if (hash === '#scan') setView('scan');
+    else if (hash === '#guest-kiosk') setView('guest-kiosk');
+    else if (hash === '#register') setView('register');
+    else setView('scan');
+  }
+
+  updateView();
+  window.addEventListener('hashchange', updateView);
+  return () => window.removeEventListener('hashchange', updateView);
+}, []);
   // Auto-show personal sign in modal when dashboard loads
   useEffect(() => {
     if (isAuthenticated && !isPersonalSignedIn && !showNameModal) {
@@ -1275,6 +1480,7 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
   };
   // STUDENT ROUTES — No login required
   if (view === 'scan') return <StudentMode />;
+  if (view === 'guest-kiosk') return <GuestKioskMode />;
   if (view === 'register') return <RegistrationMode onComplete={() => fetchData()} />;
 
   // ADMIN ROUTES — Require authentication
@@ -2156,93 +2362,94 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
             )}
           </motion.div>
         )}
-        {activeTab === 'qr' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="grid md:grid-cols-3 gap-8"
-          >
-            {/* Card 1: Self-Check Terminal (Student Check-In/Out) */}
-            <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
-              <div className="bg-emerald-500/10 p-4 rounded-3xl mb-6">
-                <QrCode className="w-12 h-12 text-emerald-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Self-Check Terminal</h2>
-              <p className="text-zinc-500 text-sm mb-8">Scan to Arrive or Leave without Librarian assistance</p>
+   {activeTab === 'qr' && (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+  >
+    {/* Card 1: Self-Check Terminal (Student Check-In/Out) */}
+    <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
+      <div className="bg-emerald-500/10 p-4 rounded-3xl mb-6">
+        <QrCode className="w-12 h-12 text-emerald-500" />
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-2">Self-Check Terminal</h2>
+      <p className="text-zinc-500 text-sm mb-8">Scan to Arrive or Leave without Librarian assistance</p>
+      <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
+        <QRCodeSVG value={scanUrl} size={180} level="H" />
+      </div>
+      <div className="flex flex-col gap-2 w-full">
+        <a href={scanUrl} target="_blank" className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl transition-all font-bold">
+          <Smartphone className="w-4 h-4" /> Open Kiosk View
+        </a>
+        <p className="text-[10px] text-zinc-600 font-mono break-all">{scanUrl}</p>
+      </div>
+    </div>
 
-              <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
-                <QRCodeSVG value={scanUrl} size={200} level="H" />
-              </div>
+    {/* Card 2: Student Registration */}
+    <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
+      <div className="bg-blue-500/10 p-4 rounded-3xl mb-6">
+        <Users className="w-12 h-12 text-blue-500" />
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-2">Student Registration</h2>
+      <p className="text-zinc-500 text-sm mb-8">Scan to register as a new library member</p>
+      <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
+        <QRCodeSVG value={registerUrl} size={180} level="H" />
+      </div>
+      <div className="flex flex-col gap-2 w-full">
+        <a href={registerUrl} target="_blank" className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all font-bold">
+          <Smartphone className="w-4 h-4" /> Open Registration View
+        </a>
+        <p className="text-[10px] text-zinc-600 font-mono break-all">{registerUrl}</p>
+      </div>
+      <div className="mt-6 bg-blue-900/10 text-blue-400 px-6 py-4 rounded-2xl text-xs border border-blue-900/20 w-full text-left">
+        <strong>Requirement:</strong> Provide this QR code to students at the entrance. They can register using their own smartphones.
+      </div>
+    </div>
 
-              <div className="flex flex-col gap-2 w-full">
-                <a
-                  href={scanUrl}
-                  target="_blank"
-                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl transition-all font-bold"
-                >
-                  <Smartphone className="w-4 h-4" /> Open Kiosk View
-                </a>
-                <p className="text-[10px] text-zinc-600 font-mono break-all">{scanUrl}</p>
-              </div>
-            </div>
+    {/* Card 3: Guest Registration */}
+    <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
+      <div className="bg-purple-500/10 p-4 rounded-3xl mb-6">
+        <Users className="w-12 h-12 text-purple-500" />
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-2">Guest Registration</h2>
+      <p className="text-zinc-500 text-sm mb-8">Scan to register as a library guest</p>
+      <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
+        <QRCodeSVG value={`${baseUrl}#guest-registration`} size={180} level="H" />
+      </div>
+      <div className="flex flex-col gap-2 w-full">
+        <a href="#guest-registration" className="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-xl transition-all font-bold">
+          <Smartphone className="w-4 h-4" /> Open Guest Registration
+        </a>
+        <p className="text-[10px] text-zinc-600 font-mono break-all">{`${baseUrl}#guest-registration`}</p>
+      </div>
+      <div className="mt-6 bg-purple-900/10 text-purple-400 px-6 py-4 rounded-2xl text-xs border border-purple-900/20 w-full text-left">
+        <strong>For Guests:</strong> Scan this QR code to register yourself. No login required.
+      </div>
+    </div>
 
-            {/* Card 2: Student Registration */}
-            <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
-              <div className="bg-blue-500/10 p-4 rounded-3xl mb-6">
-                <Users className="w-12 h-12 text-blue-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Student Registration</h2>
-              <p className="text-zinc-500 text-sm mb-8">Scan to register as a new library member</p>
-
-              <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
-                <QRCodeSVG value={registerUrl} size={200} level="H" />
-              </div>
-
-              <div className="flex flex-col gap-2 w-full">
-                <a
-                  href={registerUrl}
-                  target="_blank"
-                  className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all font-bold"
-                >
-                  <Smartphone className="w-4 h-4" /> Open Registration View
-                </a>
-                <p className="text-[10px] text-zinc-600 font-mono break-all">{registerUrl}</p>
-              </div>
-
-              <div className="mt-6 bg-blue-900/10 text-blue-400 px-6 py-4 rounded-2xl text-xs border border-blue-900/20 w-full text-left">
-                <strong>Requirement:</strong> Provide this QR code to students at the entrance. They can register using their own smartphones.
-              </div>
-            </div>
-
-            {/* Card 3: Guest Registration (NEW) */}
-            <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
-              <div className="bg-purple-500/10 p-4 rounded-3xl mb-6">
-                <Users className="w-12 h-12 text-purple-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Guest Registration</h2>
-              <p className="text-zinc-500 text-sm mb-8">Scan to register as a library guest</p>
-
-              <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
-                <QRCodeSVG value={`${baseUrl}guest`} size={200} level="H" />
-              </div>
-
-              <div className="flex flex-col gap-2 w-full">
-                <a
-                  href={`${baseUrl}guest`}
-                  target="_blank"
-                  className="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-xl transition-all font-bold"
-                >
-                  <Smartphone className="w-4 h-4" /> Open Guest Registration
-                </a>
-                <p className="text-[10px] text-zinc-600 font-mono break-all">{`${baseUrl}guest`}</p>
-              </div>
-
-              <div className="mt-6 bg-purple-900/10 text-purple-400 px-6 py-4 rounded-2xl text-xs border border-purple-900/20 w-full text-left">
-                <strong>For Guests:</strong> Scan this QR code to register yourself. No login required.
-              </div>
-            </div>
-          </motion.div>
-        )}
+    {/* Card 4: Guest Sign In/Out Kiosk */}
+    <div className="bg-[#141414] border border-[#2a2a2a] p-8 rounded-3xl shadow-xl text-center flex flex-col items-center">
+      <div className="bg-pink-500/10 p-4 rounded-3xl mb-6">
+        <LogIn className="w-12 h-12 text-pink-500" />
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-2">Guest Kiosk</h2>
+      <p className="text-zinc-500 text-sm mb-8">Scan to Sign In or Out as a guest</p>
+      <div className="bg-white p-6 rounded-3xl mb-8 shadow-2xl">
+        <QRCodeSVG value={`${baseUrl}#guest-kiosk`} size={180} level="H" />
+      </div>
+      <div className="flex flex-col gap-2 w-full">
+        <a href="#guest-kiosk" className="inline-flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-500 text-white px-6 py-3 rounded-xl transition-all font-bold">
+          <Smartphone className="w-4 h-4" /> Open Guest Kiosk
+        </a>
+        <p className="text-[10px] text-zinc-600 font-mono break-all">{`${baseUrl}#guest-kiosk`}</p>
+      </div>
+      <div className="mt-6 bg-pink-900/10 text-pink-400 px-6 py-4 rounded-2xl text-xs border border-pink-900/20 w-full text-left">
+        <strong>For Guests:</strong> Scan this QR code to check IN or OUT. Enter your name and purpose.
+      </div>
+    </div>
+  </motion.div>
+)}
         {activeTab === 'analytics' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
