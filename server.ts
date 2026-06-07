@@ -1,7 +1,7 @@
 // FORCE DEPLOY - ADD DELETE ENDPOINT FOR ADMIN LOGS
 // FORCE DEPLOY - FIX GUEST CONTACT AND OCCUPATION
 import 'dotenv/config';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
@@ -15,6 +15,38 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.json());
 
+// ========== HELPER FUNCTION ==========
+function calculateDuration(timeIn: string | null, timeOut: string | null): string {
+  if (!timeIn || !timeOut) {
+    return 'N/A';
+  }
+  
+  try {
+    const start = new Date(`2000-01-01 ${timeIn}`);
+    const end = new Date(`2000-01-01 ${timeOut}`);
+    const diffMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+    
+    if (isNaN(diffMinutes) || diffMinutes < 0) {
+      return 'Invalid time';
+    }
+    
+    if (diffMinutes < 60) {
+      return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+    }
+    
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    let duration = `${hours} hour${hours !== 1 ? 's' : ''}`;
+    if (minutes > 0) {
+      duration += ` ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    }
+    return duration;
+  } catch (error) {
+    return 'Error calculating duration';
+  }
+}
+
+// ========== SUPABASE SETUP ==========
 const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -22,65 +54,69 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const distPath = path.join(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
-// ========== GUEST ROUTE (must be before catch-all) ==========
-app.get('/guest', (req, res) => {
+// ========== GUEST ROUTE ==========
+app.get('/guest', (req: Request, res: Response) => {
   res.sendFile(path.join(process.cwd(), 'guest.html'));
 });
 
 // ========== STUDENT ROUTES ==========
-
-app.get('/api/students', async (req, res) => {
+app.get('/api/students', async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase.from('students').select('*');
     if (error) throw error;
     res.json(data || []);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.post('/api/students', async (req, res) => {
+app.post('/api/students', async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase.from('students').insert(req.body).select();
     if (error) throw error;
     res.json(data[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.delete('/api/students/:refNo', async (req, res) => {
+app.delete('/api/students/:refNo', async (req: Request, res: Response) => {
   try {
     const { refNo } = req.params;
     await supabase.from('attendance').delete().eq('studentRef', refNo);
     await supabase.from('students').delete().eq('refNo', refNo);
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.post('/api/students/:refNo/drop', async (req, res) => {
+app.post('/api/students/:refNo/drop', async (req: Request, res: Response) => {
   try {
     const { refNo } = req.params;
     await supabase.from('students').update({ status: 'DROPPED' }).eq('refNo', refNo);
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.put('/api/students/:refNo', async (req, res) => {
+app.put('/api/students/:refNo', async (req: Request, res: Response) => {
   try {
     const { refNo } = req.params;
     await supabase.from('students').update(req.body).eq('refNo', refNo);
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.post('/api/students/bulk', async (req, res) => {
+app.post('/api/students/bulk', async (req: Request, res: Response) => {
   try {
     const students = req.body;
     let added = 0, skipped = 0;
@@ -90,13 +126,47 @@ app.post('/api/students/bulk', async (req, res) => {
       else added++;
     }
     res.json({ added, skipped });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
+  }
+});
+
+app.post('/api/students/promote', async (req: Request, res: Response) => {
+  try {
+    const { data: students, error: fetchError } = await supabase.from('students').select('*');
+    if (fetchError) throw fetchError;
+    
+    let promoted = 0;
+    let deleted = 0;
+    
+    for (const student of students) {
+      let newYear = parseInt(student.year);
+      
+      if (newYear >= 1 && newYear <= 3) {
+        newYear++;
+        const { error: updateError } = await supabase
+          .from('students')
+          .update({ year: newYear.toString() })
+          .eq('refNo', student.refNo);
+        if (!updateError) promoted++;
+      } else if (newYear === 4) {
+        await supabase.from('students').delete().eq('refNo', student.refNo);
+        await supabase.from('attendance').delete().eq('studentRef', student.refNo);
+        deleted++;
+      }
+    }
+    
+    res.json({ success: true, promoted, deleted });
+  } catch (err: unknown) {
+    console.error('Promote error:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
 // ========== ATTENDANCE ROUTES ==========
-app.get('/api/attendance', async (req, res) => {
+app.get('/api/attendance', async (req: Request, res: Response) => {
   try {
     const { data: attendanceData, error: attError } = await supabase.from('attendance').select('*');
     if (attError) throw attError;
@@ -109,19 +179,18 @@ app.get('/api/attendance', async (req, res) => {
       name: studentMap.get(record.studentRef) || 'Unknown Student'
     }));
     res.json(enriched);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-// ========== FIXED ATTENDANCE ACTION ENDPOINT ==========
-app.post('/api/attendance/action', async (req, res) => {
+app.post('/api/attendance/action', async (req: Request, res: Response) => {
   try {
     const { studentRef, action, purpose } = req.body;
     const today = new Date().toISOString().split('T')[0];
     
     if (action === 'Arrive') {
-      // Check if student already has an active session today
       const { data: existing } = await supabase
         .from('attendance')
         .select('*')
@@ -158,14 +227,15 @@ app.post('/api/attendance/action', async (req, res) => {
     } else {
       res.status(400).json({ error: 'Invalid action' });
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Attendance action error:', err);
-    res.status(500).json({ error: err.message });
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-// ========== GUEST VISITS API ROUTES ==========
-app.get('/api/guest-visits', async (req, res) => {
+// ========== GUEST VISITS ROUTES ==========
+app.get('/api/guest-visits', async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('guest_visits')
@@ -173,19 +243,18 @@ app.get('/api/guest-visits', async (req, res) => {
       .order('created_at', { ascending: false });
     if (error) throw error;
     res.json(data || []);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.post('/api/guest-visits', async (req, res) => {
+app.post('/api/guest-visits', async (req: Request, res: Response) => {
   try {
     const { name, location, contact, occupation, purpose } = req.body;
     
     if (!name || !contact || !occupation || !location || !purpose) {
-      return res.status(400).json({ 
-        error: 'All fields are required' 
-      });
+      return res.status(400).json({ error: 'All fields are required' });
     }
     
     const visit_date = new Date().toISOString().split('T')[0];
@@ -209,24 +278,27 @@ app.post('/api/guest-visits', async (req, res) => {
       message: `✅ ${name} registered successfully!`,
       guest: data[0]
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Guest registration error:', err);
-    res.status(500).json({ error: err.message });
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.delete('/api/guest-visits/:id', async (req, res) => {
+app.delete('/api/guest-visits/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { error } = await supabase.from('guest_visits').delete().eq('id', id);
     if (error) throw error;
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
-// ========== GUEST ATTENDANCE (CHECK-IN/OUT) ROUTES ==========
-app.post('/api/guest-attendance/checkin', async (req, res) => {
+
+// ========== GUEST CHECK-IN ROUTE ==========
+app.post('/api/guest-attendance/checkin', async (req: Request, res: Response) => {
   try {
     const { name, purpose } = req.body;
     
@@ -265,7 +337,6 @@ app.post('/api/guest-attendance/checkin', async (req, res) => {
       .maybeSingle();
     
     if (existingRecord) {
-      // UPDATE existing record
       const { error } = await supabase
         .from('guest_visits')
         .update({ 
@@ -283,82 +354,106 @@ app.post('/api/guest-attendance/checkin', async (req, res) => {
       });
     }
     
-    // No registration found
     return res.status(404).json({ 
       error: `${name} not found. Please register first using the PURPLE QR code.`
     });
     
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Check-in error:', err);
-    res.status(500).json({ error: err.message });
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
-// ========== GUEST CHECKOUT ROUTE ==========
-app.post('/api/guest-attendance/checkout-by-name', async (req, res) => {
+
+// ========== GUEST CHECK-OUT ROUTE ==========
+app.post('/api/guest-attendance/checkout-by-name', async (req: Request, res: Response) => {
   try {
-    const { name } = req.body;
-    
-    if (!name) {
-      return res.status(400).json({ error: 'Name is required' });
-    }
-    
+    const { name, updatedPurpose } = req.body;
     const now = new Date();
-    const timeOut = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     const visitDate = now.toISOString().split('T')[0];
+    const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     
-    // Find today's active check-in
-    const { data: activeVisit } = await supabase
+    const { data: activeVisit, error: findError } = await supabase
       .from('guest_visits')
       .select('*')
       .eq('name', name)
       .eq('visit_date', visitDate)
-      .not('time_in', 'is', null)
       .eq('time_out', '00:00:00')
+      .not('time_in', 'is', null)
       .maybeSingle();
+    
+    if (findError) {
+      return res.status(500).json({ success: false, error: findError.message });
+    }
     
     if (!activeVisit) {
       return res.status(404).json({ 
-        error: `${name} has no active check-in today.` 
+        success: false, 
+        error: 'No active check-in found for this guest today' 
       });
     }
     
-    // Update with check-out time
-    const { error } = await supabase
+    const updateData: {
+      time_out: string;
+      check_out: string;
+      purpose?: string;
+    } = { 
+      time_out: currentTime,
+      check_out: now.toISOString()
+    };
+    
+    let purposeChanged = false;
+    let oldPurpose = activeVisit.purpose;
+    let newPurpose = oldPurpose;
+    
+    if (updatedPurpose && updatedPurpose !== activeVisit.purpose) {
+      updateData.purpose = updatedPurpose;
+      purposeChanged = true;
+      newPurpose = updatedPurpose;
+    }
+    
+    const { error: updateError } = await supabase
       .from('guest_visits')
-      .update({
-        time_out: timeOut,
-        check_out: now.toISOString()
-      })
+      .update(updateData)
       .eq('id', activeVisit.id);
     
-    if (error) throw error;
+    if (updateError) {
+      return res.status(500).json({ success: false, error: updateError.message });
+    }
     
     res.json({ 
       success: true, 
-      message: `✅ ${name} checked out at ${timeOut}`,
-      time_in: activeVisit.time_in,
-      time_out: timeOut
+      message: purposeChanged ? 'Check-out successful with purpose update' : 'Check-out successful',
+      purposeChanged: purposeChanged,
+      oldPurpose: oldPurpose,
+      newPurpose: newPurpose,
+      checkOutTime: currentTime,
+      guestName: name,
+      visitDuration: calculateDuration(activeVisit.time_in, currentTime)
     });
     
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Check-out error:', err);
-    res.status(500).json({ error: err.message });
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ success: false, error: errorMessage });
   }
 });
-// ========== SYSTEM ROUTES ==========
-app.post('/api/system/reset', async (req, res) => {
+
+// ========== SYSTEM ROUTE ==========
+app.post('/api/system/reset', async (req: Request, res: Response) => {
   try {
     await supabase.from('attendance').delete().neq('id', 0);
     await supabase.from('students').delete().neq('id', 0);
     await supabase.from('guest_visits').delete().neq('id', 0);
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
 // ========== ADMIN LOGS ROUTES ==========
-app.post('/api/admin/personal-signin', async (req, res) => {
+app.post('/api/admin/personal-signin', async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
     const generatedUsername = name.toLowerCase().replace(/\s/g, '_');
@@ -367,6 +462,7 @@ app.post('/api/admin/personal-signin', async (req, res) => {
       .select('*')
       .eq('username', generatedUsername)
       .single();
+    
     if (!existingAdmin) {
       const { data: newAdmin, error: createError } = await supabase
         .from('admin_users')
@@ -378,29 +474,29 @@ app.post('/api/admin/personal-signin', async (req, res) => {
         })
         .select()
         .single();
-      if (createError) {
-        console.error('Error creating admin:', createError);
-      } else {
+      if (!createError) {
         existingAdmin = newAdmin;
       }
     }
-    const { data, error } = await supabase
+    
+    const { error } = await supabase
       .from('admin_logs')
       .insert({
         username: generatedUsername,
         full_name: name,
         login_time: new Date().toISOString()
-      })
-      .select();
+      });
+    
     if (error) throw error;
     res.json({ success: true, admin: existingAdmin });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Personal sign-in error:', err);
-    res.status(500).json({ error: err.message });
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.put('/api/admin/logout', async (req, res) => {
+app.put('/api/admin/logout', async (req: Request, res: Response) => {
   try {
     const { username } = req.body;
     const { error } = await supabase
@@ -412,12 +508,13 @@ app.put('/api/admin/logout', async (req, res) => {
       .limit(1);
     if (error) throw error;
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.get('/api/admin/logs', async (req, res) => {
+app.get('/api/admin/logs', async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase
       .from('admin_logs')
@@ -428,24 +525,26 @@ app.get('/api/admin/logs', async (req, res) => {
       .order('login_time', { ascending: false });
     if (error) throw error;
     res.json(data || []);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.delete('/api/admin/logs/:id', async (req, res) => {
+app.delete('/api/admin/logs/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { error } = await supabase.from('admin_logs').delete().eq('id', id);
     if (error) throw error;
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
 // ========== ADMIN PROFILE ROUTES ==========
-app.get('/api/admin/profile-by-name/:name', async (req, res) => {
+app.get('/api/admin/profile-by-name/:name', async (req: Request, res: Response) => {
   try {
     const { name } = req.params;
     const decodedName = decodeURIComponent(name);
@@ -456,12 +555,13 @@ app.get('/api/admin/profile-by-name/:name', async (req, res) => {
       .single();
     if (error && error.code !== 'PGRST116') throw error;
     res.json({ exists: !!data, profile: data });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.get('/api/admin/profile/:username', async (req, res) => {
+app.get('/api/admin/profile/:username', async (req: Request, res: Response) => {
   try {
     const { username } = req.params;
     const { data, error } = await supabase
@@ -471,12 +571,13 @@ app.get('/api/admin/profile/:username', async (req, res) => {
       .single();
     if (error && error.code !== 'PGRST116') throw error;
     res.json({ exists: !!data, profile: data });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.post('/api/admin/profile', async (req, res) => {
+app.post('/api/admin/profile', async (req: Request, res: Response) => {
   try {
     const { username, full_name, contact, email } = req.body;
     const { data, error } = await supabase
@@ -485,23 +586,25 @@ app.post('/api/admin/profile', async (req, res) => {
       .select();
     if (error) throw error;
     res.json(data[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
 // ========== ADMIN USER MANAGEMENT ==========
-app.get('/api/admin/users', async (req, res) => {
+app.get('/api/admin/users', async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase.from('admin_users').select('*').order('created_at', { ascending: true });
     if (error) throw error;
     res.json(data || []);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.post('/api/admin/users', async (req, res) => {
+app.post('/api/admin/users', async (req: Request, res: Response) => {
   try {
     const { username, password, full_name, contact, email } = req.body;
     const { data, error } = await supabase
@@ -510,72 +613,32 @@ app.post('/api/admin/users', async (req, res) => {
       .select();
     if (error) throw error;
     res.json(data[0]);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-app.delete('/api/admin/users/:username', async (req, res) => {
+app.delete('/api/admin/users/:username', async (req: Request, res: Response) => {
   try {
     const { username } = req.params;
     const { error } = await supabase.from('admin_users').delete().eq('username', username);
     if (error) throw error;
     res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-// Promote all students to next year (DELETE Year 4 students)
-app.post('/api/students/promote', async (req, res) => {
-  try {
-    const { data: students, error: fetchError } = await supabase.from('students').select('*');
-    if (fetchError) throw fetchError;
-    
-    let promoted = 0;
-    let deleted = 0;
-    
-    for (const student of students) {
-      let newYear = parseInt(student.year);
-      
-      if (newYear >= 1 && newYear <= 3) {
-        // Promote Year 1,2,3 to next year
-        newYear++;
-        const { error: updateError } = await supabase
-          .from('students')
-          .update({ year: newYear.toString() })
-          .eq('refNo', student.refNo);
-        
-        if (!updateError) promoted++;
-      } else if (newYear === 4) {
-        // DELETE Year 4 students (graduated)
-        const { error: deleteError } = await supabase
-          .from('students')
-          .delete()
-          .eq('refNo', student.refNo);
-        
-        // Also delete their attendance records
-        if (!deleteError) {
-          await supabase.from('attendance').delete().eq('studentRef', student.refNo);
-          deleted++;
-        }
-      }
-    }
-    
-    res.json({ success: true, promoted, deleted });
-  } catch (err: any) {
-    console.error('Promote error:', err);
-    res.status(500).json({ error: err.message });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-// ========== STATIC FILES ==========
+// ========== STATIC FILES & CATCH-ALL ==========
 app.use(express.static(distPath));
 
-// ========== CATCH-ALL (MUST be LAST) ==========
-app.get('*', (req, res) => {
+app.get('*', (req: Request, res: Response) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
+// ========== START SERVER ==========
 const PORT = process.env.PORT || 3002;
 console.log('🔥 SERVER RESTARTED - PORT:', PORT);
 app.listen(PORT, () => {

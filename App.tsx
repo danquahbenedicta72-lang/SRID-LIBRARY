@@ -293,13 +293,16 @@ const StudentMode = () => {
   )
 }
 // Guest Kiosk Mode Component (Updated - Same flow as Student Mode)
+// Guest Kiosk Mode Component (Updated - With Purpose Change at Checkout)
 const GuestKioskMode = () => {
   const [step, setStep] = useState<'name' | 'action' | 'success'>('name');
   const [guestName, setGuestName] = useState('');
   const [action, setAction] = useState<'Arrive' | 'Leave' | null>(null);
   const [purpose, setPurpose] = useState('');
+  const [currentPurpose, setCurrentPurpose] = useState(''); // NEW: store purpose for checkout
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkoutResult, setCheckoutResult] = useState<{ duration?: string, purposeChanged?: boolean, oldPurpose?: string, newPurpose?: string }>({}); // NEW
 
   const purposeOptions = ['Study', 'Research', 'Borrow Books', 'Return Books', 'Meeting', 'Other'];
 
@@ -312,39 +315,97 @@ const GuestKioskMode = () => {
     setStep('action');
   };
 
-  const handleSubmit = async () => {
+  // UPDATED: Store purpose when checking in
+  const handleCheckIn = async () => {
     setLoading(true);
     try {
-      if (action === 'Arrive') {
-        const res = await fetch('/api/guest-attendance/checkin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: guestName, purpose })
-        });
-        if (res.ok) {
-          setStep('success');
-        } else {
-          const err = await res.json();
-          setError(err.error);
-        }
-      } else if (action === 'Leave') {
-        const res = await fetch('/api/guest-attendance/checkout-by-name', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: guestName })
-        });
-        if (res.ok) {
-          setStep('success');
-        } else {
-          const err = await res.json();
-          setError(err.error);
-        }
+      const res = await fetch('/api/guest-attendance/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: guestName, purpose })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentPurpose(purpose); // Store purpose for checkout
+        setStep('success');
+      } else {
+        const err = await res.json();
+        setError(err.error);
       }
     } catch (e) {
       setError('Failed to submit.');
     } finally {
       setLoading(false);
     }
+  };
+
+  // UPDATED: Handle checkout with purpose change confirmation
+  const handleCheckOut = async () => {
+    // Ask if purpose is still correct
+    const purposeConfirmed = window.confirm(
+      `📋 Guest: ${guestName}\n\nCurrent purpose: "${currentPurpose || 'Unknown'}"\n\nIs this still correct?\n\n• Click OK to keep this purpose\n• Click Cancel to change it`
+    );
+    
+    let updatedPurpose = null;
+    
+    if (!purposeConfirmed) {
+      const purposeList = purposeOptions.join('\n• ');
+      const newPurpose = prompt(
+        `✏️ Change purpose for ${guestName}\n\nSelect or type new purpose:\n• ${purposeList}\n\nEnter purpose:`,
+        currentPurpose
+      );
+      
+      if (newPurpose && newPurpose.trim() !== '') {
+        updatedPurpose = newPurpose.trim();
+      } else if (newPurpose === '') {
+        alert('Purpose cannot be empty. Keeping original purpose.');
+      }
+    }
+    
+    setLoading(true);
+    try {
+      const res = await fetch('/api/guest-attendance/checkout-by-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: guestName, updatedPurpose })
+      });
+      
+      if (res.ok) {
+        const result = await res.json();
+        setCheckoutResult({
+          duration: result.visitDuration,
+          purposeChanged: result.purposeChanged,
+          oldPurpose: result.oldPurpose,
+          newPurpose: result.newPurpose
+        });
+        setStep('success');
+      } else {
+        const err = await res.json();
+        setError(err.error);
+      }
+    } catch (e) {
+      setError('Failed to submit.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (action === 'Arrive') {
+      await handleCheckIn();
+    } else if (action === 'Leave') {
+      await handleCheckOut();
+    }
+  };
+
+  const handleReset = () => {
+    setStep('name');
+    setGuestName('');
+    setPurpose('');
+    setAction(null);
+    setCurrentPurpose('');
+    setCheckoutResult({});
+    setError('');
   };
 
   return (
@@ -445,6 +506,13 @@ const GuestKioskMode = () => {
                 </motion.div>
               )}
 
+              {action === 'Leave' && currentPurpose && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="bg-purple-500/10 p-3 rounded-xl border border-purple-500/20">
+                  <p className="text-xs text-purple-400">Current purpose: <strong>{currentPurpose}</strong></p>
+                  <p className="text-[10px] text-zinc-500 mt-1">You can change this on the next screen</p>
+                </motion.div>
+              )}
+
               {error && <p className="text-red-500 text-xs text-center flex items-center justify-center gap-1"><AlertCircle className="w-3 h-3" /> {error}</p>}
 
               <div className="flex gap-4">
@@ -476,16 +544,27 @@ const GuestKioskMode = () => {
                 <CheckCircle2 className="w-12 h-12 text-emerald-500" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">Successfully Recorded</h2>
-                <p className="text-zinc-500 mt-2">Thank you for visiting the library!</p>
+                <h2 className="text-2xl font-bold">
+                  {action === 'Arrive' ? 'Check-In Successful!' : 'Check-Out Successful!'}
+                </h2>
+                {action === 'Leave' && checkoutResult.duration && (
+                  <p className="text-emerald-400 text-sm mt-2">
+                    Duration: {checkoutResult.duration}
+                  </p>
+                )}
+                {action === 'Leave' && checkoutResult.purposeChanged && (
+                  <p className="text-purple-400 text-xs mt-1">
+                    Purpose changed from "{checkoutResult.oldPurpose}" to "{checkoutResult.newPurpose}"
+                  </p>
+                )}
+                <p className="text-zinc-500 mt-2">
+                  {action === 'Arrive' 
+                    ? 'Thank you for visiting the library!' 
+                    : 'Thank you! Come back soon!'}
+                </p>
               </div>
               <button
-                onClick={() => {
-                  setStep('name');
-                  setGuestName('');
-                  setPurpose('');
-                  setAction(null);
-                }}
+                onClick={handleReset}
                 className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-4 rounded-2xl"
               >
                 Done
@@ -497,6 +576,7 @@ const GuestKioskMode = () => {
     </div>
   );
 };
+// Student Registration Mode Component (For Students to Register)
 const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
   const [formData, setFormData] = useState<Partial<Student>>({
     year: '1',
@@ -612,8 +692,8 @@ const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
         </form>
       </motion.div>
     </div>
-  )
-}
+  );
+};
 // Guest Registration Mode Component
 const GuestRegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
   const [formData, setFormData] = useState({
@@ -1629,6 +1709,7 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
       }
     }
   };
+
   // STUDENT ROUTES — No login required
   if (view === 'scan') return <StudentMode />;
   if (view === 'guest-kiosk') return <GuestKioskMode />;
