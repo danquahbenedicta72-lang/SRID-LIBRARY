@@ -614,7 +614,157 @@ const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
     </div>
   )
 }
+// Guest Registration Mode Component
+const GuestRegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    contact: '',
+    occupation: '',
+    location: '',
+    purpose: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      setError('Full name is required');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/guest-visits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          contact: formData.contact,
+          occupation: formData.occupation,
+          location: formData.location,
+          purpose: formData.purpose
+        })
+      });
+      if (res.ok) {
+        setSuccess(true);
+        onComplete();
+      } else {
+        const err = await res.json();
+        setError(err.error);
+      }
+    } catch (e) {
+      setError('Registration failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 text-center space-y-6">
+          <div className="bg-emerald-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+          </div>
+          <h2 className="text-2xl font-bold">Registration Complete!</h2>
+          <p className="text-zinc-500">You can now use the Guest Kiosk to check in/out.</p>
+          <button onClick={() => window.location.hash = '#guest-kiosk'} className="w-full bg-purple-600 text-white font-bold py-4 rounded-2xl">
+            Go to Guest Kiosk
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+        <div className="flex flex-col items-center mb-8">
+          <img
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            alt="UMaT Logo"
+            className="w-16 h-16 object-contain mb-4"
+          />
+          <h1 className="text-2xl font-bold">Guest Registration</h1>
+          <p className="text-zinc-500 text-sm">Register as a library guest</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs font-mono uppercase text-zinc-500">Full Name *</label>
+            <input
+              required
+              type="text"
+              placeholder="Enter your full name"
+              value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-purple-500 outline-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-mono uppercase text-zinc-500">Phone Number</label>
+            <input
+              type="tel"
+              placeholder="e.g., 0244123456"
+              value={formData.contact}
+              onChange={e => setFormData({ ...formData, contact: e.target.value })}
+              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-purple-500 outline-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-mono uppercase text-zinc-500">Occupation</label>
+            <input
+              type="text"
+              placeholder="e.g., Student, Teacher, Researcher"
+              value={formData.occupation}
+              onChange={e => setFormData({ ...formData, occupation: e.target.value })}
+              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-purple-500 outline-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-mono uppercase text-zinc-500">Institution / Location</label>
+            <input
+              type="text"
+              placeholder="e.g., UMaT, Takoradi"
+              value={formData.location}
+              onChange={e => setFormData({ ...formData, location: e.target.value })}
+              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-purple-500 outline-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-mono uppercase text-zinc-500">Purpose of Visit</label>
+            <select
+              value={formData.purpose}
+              onChange={e => setFormData({ ...formData, purpose: e.target.value })}
+              className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 px-4 focus:ring-2 focus:ring-purple-500 outline-none"
+            >
+              <option value="">Select purpose...</option>
+              <option value="Study">Study</option>
+              <option value="Research">Research</option>
+              <option value="Borrow Books">Borrow Books</option>
+              <option value="Return Books">Return Books</option>
+              <option value="Meeting">Meeting</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+
+          <button disabled={loading} type="submit" className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-2xl transition-all">
+            {loading ? 'Registering...' : 'Complete Registration'}
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
 const LoginMode = ({ onLogin }: { onLogin: (role: UserRole, username: string) => void }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -1055,7 +1205,7 @@ export default function App() {
   const [showAdminRegModal, setShowAdminRegModal] = useState(false);
   const [adminProfile, setAdminProfile] = useState<any>(null);
 
- const [view, setView] = useState<'admin' | 'scan' | 'register' | 'guest-kiosk'>('admin'); 
+ const [view, setView] = useState<'admin' | 'scan' | 'register' | 'guest-kiosk' | 'guest-registration'>('admin');
 
   const [newStudent, setNewStudent] = useState<Partial<Student>>({
     year: '1',
@@ -1155,6 +1305,7 @@ export default function App() {
     if (hash === '#admin') setView('admin');
     else if (hash === '#scan') setView('scan');
     else if (hash === '#guest-kiosk') setView('guest-kiosk');
+        else if (hash === '#guest-registration') setView('guest-registration');
     else if (hash === '#register') setView('register');
     else setView('scan');
   }
@@ -1481,6 +1632,7 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
   // STUDENT ROUTES — No login required
   if (view === 'scan') return <StudentMode />;
   if (view === 'guest-kiosk') return <GuestKioskMode />;
+    if (view === 'guest-registration') return <GuestRegistrationMode onComplete={() => fetchData()} />;
   if (view === 'register') return <RegistrationMode onComplete={() => fetchData()} />;
 
   // ADMIN ROUTES — Require authentication
