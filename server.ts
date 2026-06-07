@@ -181,10 +181,34 @@ app.get('/api/guest-visits', async (req, res) => {
 app.post('/api/guest-visits', async (req, res) => {
   try {
     const { name, location, contact, occupation, purpose } = req.body;
+    
+    if (!name || !contact || !occupation || !location || !purpose) {
+      return res.status(400).json({ 
+        error: 'All fields are required' 
+      });
+    }
+    
     const visit_date = new Date().toISOString().split('T')[0];
-    const { data, error } = await supabase.from('guest_visits').insert({ name, location, contact, occupation, purpose, visit_date }).select();
+    
+    const { data, error } = await supabase
+      .from('guest_visits')
+      .insert([{
+        name, location, contact, occupation, purpose, visit_date,
+        time_in: null,
+        time_out: '00:00:00',
+        check_in: null,
+        check_out: null,
+        created_at: new Date().toISOString()
+      }])
+      .select();
+    
     if (error) throw error;
-    res.json(data[0]);
+    
+    res.json({ 
+      success: true, 
+      message: `✅ ${name} registered successfully!`,
+      guest: data[0]
+    });
   } catch (err: any) {
     console.error('Guest registration error:', err);
     res.status(500).json({ error: err.message });
@@ -211,50 +235,113 @@ app.post('/api/guest-attendance/checkin', async (req, res) => {
     }
     
     const now = new Date();
-    const timeIn = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const timeIn = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     const visitDate = now.toISOString().split('T')[0];
     
-       // FIRST: Look for existing guest record from registration
+    // Check if guest already checked in today
+    const { data: alreadyCheckedIn } = await supabase
+      .from('guest_visits')
+      .select('id')
+      .eq('name', name)
+      .eq('visit_date', visitDate)
+      .not('time_in', 'is', null)
+      .eq('time_out', '00:00:00')
+      .maybeSingle();
+    
+    if (alreadyCheckedIn) {
+      return res.status(400).json({ 
+        error: `${name} is already checked in today. Please check out first.` 
+      });
+    }
+    
+    // Find existing registration record
     const { data: existingRecord } = await supabase
       .from('guest_visits')
       .select('*')
       .eq('name', name)
       .eq('visit_date', visitDate)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (existingRecord && existingRecord.length > 0) {
-      // UPDATE existing record with check-in time
+      .is('time_in', null)
+      .not('contact', 'is', null)
+      .maybeSingle();
+    
+    if (existingRecord) {
+      // UPDATE existing record
       const { error } = await supabase
         .from('guest_visits')
         .update({ 
-          check_in: now.toISOString(), 
           time_in: timeIn,
-          purpose: purpose || existingRecord[0].purpose
-        })
-        .eq('id', existingRecord[0].id);
-      
-      if (error) throw error;
-      res.json({ success: true, message: 'Guest checked in successfully' });
-      
-    } else {
-      // No existing record - create new one
-      const { error } = await supabase
-        .from('guest_visits')
-        .insert({
-          name: name,
-          purpose: purpose || 'Study',
           check_in: now.toISOString(),
-          time_in: timeIn,
-          visit_date: visitDate
-        });
+          purpose: purpose || existingRecord.purpose
+        })
+        .eq('id', existingRecord.id);
       
       if (error) throw error;
-      res.json({ success: true, message: 'Guest checked in successfully' });
+      
+      return res.json({ 
+        success: true, 
+        message: `✅ ${name} checked in at ${timeIn}`
+      });
     }
+    
+    // No registration found
+    return res.status(404).json({ 
+      error: `${name} not found. Please register first using the PURPLE QR code.`
+    });
     
   } catch (err: any) {
     console.error('Check-in error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+// ========== GUEST CHECKOUT ROUTE ==========
+app.post('/api/guest-attendance/checkout-by-name', async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+    
+    const now = new Date();
+    const timeOut = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const visitDate = now.toISOString().split('T')[0];
+    
+    // Find today's active check-in
+    const { data: activeVisit } = await supabase
+      .from('guest_visits')
+      .select('*')
+      .eq('name', name)
+      .eq('visit_date', visitDate)
+      .not('time_in', 'is', null)
+      .eq('time_out', '00:00:00')
+      .maybeSingle();
+    
+    if (!activeVisit) {
+      return res.status(404).json({ 
+        error: `${name} has no active check-in today.` 
+      });
+    }
+    
+    // Update with check-out time
+    const { error } = await supabase
+      .from('guest_visits')
+      .update({
+        time_out: timeOut,
+        check_out: now.toISOString()
+      })
+      .eq('id', activeVisit.id);
+    
+    if (error) throw error;
+    
+    res.json({ 
+      success: true, 
+      message: `✅ ${name} checked out at ${timeOut}`,
+      time_in: activeVisit.time_in,
+      time_out: timeOut
+    });
+    
+  } catch (err: any) {
+    console.error('Check-out error:', err);
     res.status(500).json({ error: err.message });
   }
 });
