@@ -381,7 +381,7 @@ const GuestKioskMode = () => {
                   type="text"
                   placeholder="Enter your full name"
                   value={guestName}
-                  onChange={(e) => setGuestName(e.target.value.toUpperCase())}
+                  onChange={(e) => setGuestName(e.target.value)}
                   className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-2xl py-4 px-6 text-xl text-center focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-zinc-800"
                   autoFocus
                 />
