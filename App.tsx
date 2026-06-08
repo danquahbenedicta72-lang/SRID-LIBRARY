@@ -27,7 +27,9 @@ import {
   Upload,
   Trash2,
   Settings,
-  AlertTriangle
+  AlertTriangle,
+  Calendar,
+  Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -1190,6 +1192,168 @@ const PersonalSignInModal = ({ isOpen, onSignIn, onClose }: { isOpen: boolean, o
     </div>
   );
 };
+// ========== ATTENDANCE BY MONTH & WEEK COMPONENT ==========
+const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRecord[], students: Student[] }) => {
+  const getWeekNumber = (date: Date): number => {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  };
+
+  const getWeekRange = (date: Date): string => {
+    const day = date.getDay();
+    const start = new Date(date);
+    start.setDate(date.getDate() - day + (day === 0 ? -6 : 1));
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const formatDate = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+    return `${formatDate(start)} - ${formatDate(end)}`;
+  };
+
+  const groupedData: {
+    [month: string]: {
+      [week: string]: {
+        weekRange: string;
+        days: {
+          date: string;
+          dayName: string;
+          records: any[];
+        }[];
+      };
+    };
+  } = {};
+
+  attendance.forEach(record => {
+    const date = new Date(record.date);
+    const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+    const weekKey = `Week ${getWeekNumber(date)}`;
+    const weekRange = getWeekRange(date);
+    const dayName = date.toLocaleString('default', { weekday: 'long' });
+    const dateStr = record.date;
+
+    if (!groupedData[month]) groupedData[month] = {};
+    if (!groupedData[month][weekKey]) {
+      groupedData[month][weekKey] = { weekRange, days: [] };
+    }
+    
+    let dayExists = groupedData[month][weekKey].days.find(d => d.date === dateStr);
+    if (!dayExists) {
+      groupedData[month][weekKey].days.push({
+        date: dateStr,
+        dayName: dayName,
+        records: []
+      });
+      dayExists = groupedData[month][weekKey].days.find(d => d.date === dateStr);
+    }
+    
+    // Get student name
+    const student = students.find(s => s.refNo === record.studentRef);
+    const studentName = student?.name || 'Unknown';
+    
+    // Add studentName to the record for display
+    dayExists!.records.push({
+      ...record,
+      studentName: studentName
+    });
+  });
+
+  Object.keys(groupedData).forEach(month => {
+    Object.keys(groupedData[month]).forEach(week => {
+      groupedData[month][week].days.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    });
+  });
+
+  return (
+    <div className="space-y-8">
+      {Object.keys(groupedData).map(month => (
+        <div key={month} className="bg-[#141414] border border-[#2a2a2a] rounded-2xl overflow-hidden">
+          <div className="bg-emerald-600/20 px-6 py-4 border-b border-[#2a2a2a]">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-emerald-500" />
+              {month}
+            </h3>
+          </div>
+          
+          <div className="divide-y divide-[#2a2a2a]">
+            {Object.keys(groupedData[month]).map(week => {
+              const weekData = groupedData[month][week];
+              const totalVisits = weekData.days.reduce((sum, day) => sum + day.records.length, 0);
+              
+              return (
+                <div key={week} className="p-4">
+                  <div className="flex justify-between items-center mb-4 px-2">
+                    <div>
+                      <h4 className="text-md font-bold text-emerald-400">
+                        {week} <span className="text-zinc-500 text-sm ml-2">({weekData.weekRange})</span>
+                      </h4>
+                    </div>
+                    <div className="text-xs text-zinc-500 bg-zinc-800 px-3 py-1 rounded-full">
+                      Total: {totalVisits} visits
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {weekData.days.map(day => (
+                      <div key={day.date} className="bg-[#1e1e1e] rounded-xl border border-[#2a2a2a] overflow-hidden">
+                        <div className="bg-zinc-800/50 px-4 py-2 flex justify-between items-center">
+                          <div className="flex items-center gap-3">
+                            <span className="font-bold text-white">{day.dayName}</span>
+                            <span className="text-xs text-zinc-500 font-mono">{day.date}</span>
+                          </div>
+                          <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full">
+                            {day.records.length} visit(s)
+                          </span>
+                        </div>
+                        
+                        {day.records.length > 0 ? (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead className="bg-[#2a2a2a] text-[10px] uppercase text-zinc-500 font-mono">
+                                <tr>
+                                  <th className="py-2 px-4 text-left">Student Name</th>
+                                  <th className="py-2 px-4 text-left">Ref No</th>
+                                  <th className="py-2 px-4 text-left">Time In</th>
+                                  <th className="py-2 px-4 text-left">Time Out</th>
+                                  <th className="py-2 px-4 text-left">Purpose</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-[#2a2a2a]">
+                                {day.records.map((record: any, idx: number) => (
+                                  <tr key={idx} className="hover:bg-zinc-800/30">
+                                    <td className="py-2 px-4 text-white">{record.studentName}</td>
+                                    <td className="py-2 px-4 text-zinc-400 font-mono text-xs">{record.studentRef}</td>
+                                    <td className="py-2 px-4 text-zinc-400">{format(new Date(record.checkIn), 'HH:mm')}</td>
+                                    <td className="py-2 px-4 text-zinc-500">{record.checkOut ? format(new Date(record.checkOut), 'HH:mm') : '--:--'}</td>
+                                    <td className="py-2 px-4 text-zinc-400 italic text-xs">{record.purpose || '-'}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <div className="py-6 text-center text-zinc-600 italic text-sm">
+                            No attendance records for this day
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      
+      {Object.keys(groupedData).length === 0 && (
+        <div className="text-center py-12 bg-[#141414] rounded-2xl border border-[#2a2a2a]">
+          <Calendar className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
+          <p className="text-zinc-500">No attendance records found</p>
+        </div>
+      )}
+    </div>
+  );
+};
 // Admin Registration Modal Component
 const AdminRegistrationModal = ({ isOpen, onRegister, onClose }: {
   isOpen: boolean,
@@ -1922,178 +2086,42 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
           )}
         </AnimatePresence>
 
-        {activeTab === 'attendance' && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="grid lg:grid-cols-3 gap-8"
-          >
-            <div className="lg:col-span-1 space-y-6">
-              <div id="check-in-panel" className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl">
-                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <LogIn className="w-5 h-5 text-emerald-500" />
-                  Manual Check-In
-                </h2>
-                <div className="relative mb-6">
-                  <Search className="absolute left-3 top-3.5 w-5 h-5 text-zinc-500" />
-                  <input
-                    type="text"
-                    placeholder="Search Reference Number..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all text-white"
-                  />
-                </div>
-
-                {searchTerm && (
-                  <div className="space-y-4">
-                    {students.filter(s => s.refNo.toLowerCase().includes(searchTerm.toLowerCase())).map(student => {
-                      const today = new Date().toISOString().split('T')[0];
-                      const activeSession = attendance.find(a => a.studentRef === student.refNo && a.date === today && !a.checkOut);
-
-                      return (
-                        <div key={student.refNo} className="bg-[#1e1e1e] border border-[#2a2a2a] p-4 rounded-xl">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <p className="font-bold text-white">{student.name}</p>
-                              <p className="text-xs text-zinc-500 font-mono tracking-tighter text-emerald-500">{student.refNo}</p>
-                              <p className="text-xs text-zinc-500">{student.programme} • {student.hall}</p>
-                            </div>
-                            <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${activeSession ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                              {activeSession ? 'Inside' : 'Not In'}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            {!activeSession ? (
-                              <div className="w-full space-y-2">
-                                <input
-                                  type="text"
-                                  placeholder="Book / Purpose"
-                                  value={purpose}
-                                  onChange={(e) => setPurpose(e.target.value)}
-                                  className="w-full bg-[#141414] border border-[#2a2a2a] rounded-lg py-2 px-3 text-xs outline-none focus:ring-1 focus:ring-emerald-500"
-                                />
-                                <button
-                                  onClick={() => handleAttendance(student.refNo, 'check-in')}
-                                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-sm"
-                                >
-                                  <LogIn className="w-4 h-4" /> Check In
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => handleAttendance(student.refNo, 'check-out')}
-                                className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-sm"
-                              >
-                                <LogOut className="w-4 h-4" /> Check Out
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {students.filter(s => s.refNo.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                      <div className="text-center py-8">
-                        <Users className="w-12 h-12 text-zinc-700 mx-auto mb-2" />
-                        <p className="text-zinc-500 text-sm">No student found matching "{searchTerm}"</p>
-                        <button
-                          onClick={() => setActiveTab('students')}
-                          className="mt-4 text-emerald-500 hover:underline text-sm font-medium"
-                        >
-                          Register new student?
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl h-full">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-blue-500" />
-                    Live Activity
-                  </h2>
-                  <button
-                    onClick={() => {
-                      const csvHeader = "Student,Ref No,Book/Purpose,Time In,Time Out,Date\n";
-                      const csvRows = (attendance || []).map(a =>
-                        `"${a.name}","${a.studentRef}","${a.purpose || 'General Study'}","${a.checkIn}","${a.checkOut || ''}","${a.date}"`
-                      ).join("\n");
-                      const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.setAttribute('hidden', '');
-                      a.setAttribute('href', url);
-                      a.setAttribute('download', `library_attendance_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      showMsg('CSV Exported successfully');
-                    }}
-                    className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
-                  >
-                    <Smartphone className="w-3 h-3" /> Export CSV
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="text-xs uppercase text-zinc-500 font-mono tracking-wider">
-                      <tr>
-                        <th className="pb-4 font-medium px-4">Student</th>
-                        <th className="pb-4 font-medium px-4">Book/Purpose</th>
-                        <th className="pb-4 font-medium px-4">Time In</th>
-                        <th className="pb-4 font-medium px-4">Time Out</th>
-                        <th className="pb-4 font-medium px-4">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-sm divide-y divide-[#2a2a2a]">
-{(attendance || []).filter((record) => {
-  const today = new Date().toISOString().split('T')[0];
-  const recordDate = record.date ? record.date.split('T')[0] : '';
-  return recordDate === today;
-}).map((record) => (
-                        <tr key={record.id} className="hover:bg-zinc-800/30 transition-colors group">
-                          <td className="py-4 px-4">
-                            <div>
-                              <p className="font-bold text-white group-hover:text-emerald-400 transition-colors">{record.name}</p>
-                              <p className="text-xs text-zinc-500 font-mono">{record.studentRef}</p>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-2">
-                              <BookOpen className="w-3 h-3 text-zinc-600" />
-                              <span className="text-zinc-300 italic text-xs">{record.purpose || 'General Study'}</span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4 text-zinc-400">{format(new Date(record.checkIn), 'HH:mm:ss')}</td>
-                          <td className="py-4 px-4 text-zinc-400">
-                            {record.checkOut ? format(new Date(record.checkOut), 'HH:mm:ss') : '--:--:--'}
-                          </td>
-                          <td className="py-4 px-4">
-                            {record.checkOut ? (
-                              <span className="flex items-center gap-1.5 text-zinc-500 text-xs">
-                                <LogOut className="w-3 h-3" /> Exited
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1.5 text-emerald-500 text-xs font-bold animate-pulse">
-                                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                                Inside
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
+{activeTab === 'attendance' && (
+  <motion.div
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    className="space-y-6"
+  >
+    <div className="flex justify-between items-center">
+      <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+        <Calendar className="w-6 h-6 text-emerald-500" />
+        Attendance by Month & Week
+      </h2>
+      <button
+        onClick={() => {
+          const csvHeader = "Student,Ref No,Date,Day,Time In,Time Out,Purpose\n";
+          const csvRows = attendance.map(a => {
+            const date = new Date(a.date);
+            const dayName = date.toLocaleString('default', { weekday: 'long' });
+            return `"${a.name}","${a.studentRef}","${a.date}","${dayName}","${a.checkIn}","${a.checkOut || ''}","${a.purpose || ''}"`;
+          }).join("\n");
+          const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.setAttribute('href', url);
+          a.setAttribute('download', `attendance_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+          a.click();
+          showMsg('CSV Exported successfully');
+        }}
+        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+      >
+        <Download className="w-4 h-4" /> Export CSV
+      </button>
+    </div>
+    
+    <AttendanceByMonth attendance={attendance} students={students} />
+  </motion.div>
+)}
 
         {activeTab === 'students' && (
           <motion.div
