@@ -1,11 +1,10 @@
 // FORCE DEPLOY - ADD DELETE ENDPOINT FOR ADMIN LOGS
 // FORCE DEPLOY - FIX GUEST CONTACT AND OCCUPATION
-import 'dotenv/config';
-import express, { Request, Response } from 'express';
+import dotenv from 'dotenv';
+import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -55,12 +54,12 @@ const distPath = path.join(process.cwd(), 'dist');
 app.use(express.static(distPath));
 
 // ========== GUEST ROUTE ==========
-app.get('/guest', (req: Request, res: Response) => {
+app.get('/guest', (req: any, res: any) => {
   res.sendFile(path.join(process.cwd(), 'guest.html'));
 });
 
 // ========== STUDENT ROUTES ==========
-app.get('/api/students', async (req: Request, res: Response) => {
+app.get('/api/students', async (req: any, res: any) => {
   try {
     const { data, error } = await supabase.from('students').select('*');
     if (error) throw error;
@@ -71,7 +70,7 @@ app.get('/api/students', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/students', async (req: Request, res: Response) => {
+app.post('/api/students', async (req: any, res: any) => {
   try {
     const { data, error } = await supabase.from('students').insert(req.body).select();
     if (error) throw error;
@@ -82,7 +81,7 @@ app.post('/api/students', async (req: Request, res: Response) => {
   }
 });
 
-app.delete('/api/students/:refNo', async (req: Request, res: Response) => {
+app.delete('/api/students/:refNo', async (req: any, res: any) => {
   try {
     const { refNo } = req.params;
     await supabase.from('attendance').delete().eq('studentRef', refNo);
@@ -94,7 +93,7 @@ app.delete('/api/students/:refNo', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/students/:refNo/drop', async (req: Request, res: Response) => {
+app.post('/api/students/:refNo/drop', async (req: any, res: any) => {
   try {
     const { refNo } = req.params;
     await supabase.from('students').update({ status: 'DROPPED' }).eq('refNo', refNo);
@@ -105,7 +104,7 @@ app.post('/api/students/:refNo/drop', async (req: Request, res: Response) => {
   }
 });
 
-app.put('/api/students/:refNo', async (req: Request, res: Response) => {
+app.put('/api/students/:refNo', async (req: any, res: any) => {
   try {
     const { refNo } = req.params;
     await supabase.from('students').update(req.body).eq('refNo', refNo);
@@ -116,7 +115,7 @@ app.put('/api/students/:refNo', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/students/bulk', async (req: Request, res: Response) => {
+app.post('/api/students/bulk', async (req: any, res: any) => {
   try {
     const students = req.body;
     let added = 0, skipped = 0;
@@ -132,7 +131,7 @@ app.post('/api/students/bulk', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/students/promote', async (req: Request, res: Response) => {
+app.post('/api/students/promote', async (req: any, res: any) => {
   try {
     const { data: students, error: fetchError } = await supabase.from('students').select('*');
     if (fetchError) throw fetchError;
@@ -166,15 +165,15 @@ app.post('/api/students/promote', async (req: Request, res: Response) => {
 });
 
 // ========== ATTENDANCE ROUTES ==========
-app.get('/api/attendance', async (req: Request, res: Response) => {
+app.get('/api/attendance', async (req: any, res: any) => {
   try {
     const { data: attendanceData, error: attError } = await supabase.from('attendance').select('*');
     if (attError) throw attError;
     const { data: studentsData, error: stuError } = await supabase.from('students').select('refNo, name');
     if (stuError) throw stuError;
     const studentMap = new Map();
-    studentsData.forEach(s => studentMap.set(s.refNo, s.name));
-    const enriched = attendanceData.map(record => ({
+    studentsData.forEach((s: any) => studentMap.set(s.refNo, s.name));
+    const enriched = attendanceData.map((record: any) => ({
       ...record,
       name: studentMap.get(record.studentRef) || 'Unknown Student'
     }));
@@ -185,7 +184,7 @@ app.get('/api/attendance', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/attendance/action', async (req: Request, res: Response) => {
+app.post('/api/attendance/action', async (req: any, res: any) => {
   try {
     const { studentRef, action, purpose } = req.body;
     const today = new Date().toISOString().split('T')[0];
@@ -235,7 +234,7 @@ app.post('/api/attendance/action', async (req: Request, res: Response) => {
 });
 
 // ========== GUEST VISITS ROUTES ==========
-app.get('/api/guest-visits', async (req: Request, res: Response) => {
+app.get('/api/guest-visits', async (req: any, res: any) => {
   try {
     const { data, error } = await supabase
       .from('guest_visits')
@@ -249,7 +248,7 @@ app.get('/api/guest-visits', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/guest-visits', async (req: Request, res: Response) => {
+app.post('/api/guest-visits', async (req: any, res: any) => {
   try {
     const { name, location, contact, occupation, purpose } = req.body;
     
@@ -285,7 +284,7 @@ app.post('/api/guest-visits', async (req: Request, res: Response) => {
   }
 });
 
-app.delete('/api/guest-visits/:id', async (req: Request, res: Response) => {
+app.delete('/api/guest-visits/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
     const { error } = await supabase.from('guest_visits').delete().eq('id', id);
@@ -298,7 +297,7 @@ app.delete('/api/guest-visits/:id', async (req: Request, res: Response) => {
 });
 
 // ========== GUEST CHECK-IN ROUTE ==========
-app.post('/api/guest-attendance/checkin', async (req: Request, res: Response) => {
+app.post('/api/guest-attendance/checkin', async (req: any, res: any) => {
   try {
     const { name, purpose } = req.body;
     
@@ -310,7 +309,6 @@ app.post('/api/guest-attendance/checkin', async (req: Request, res: Response) =>
     const timeIn = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     const visitDate = now.toISOString().split('T')[0];
     
-    // Check if guest already checked in today
     const { data: alreadyCheckedIn } = await supabase
       .from('guest_visits')
       .select('id')
@@ -326,7 +324,6 @@ app.post('/api/guest-attendance/checkin', async (req: Request, res: Response) =>
       });
     }
     
-    // Find existing registration record
     const { data: existingRecord } = await supabase
       .from('guest_visits')
       .select('*')
@@ -366,7 +363,7 @@ app.post('/api/guest-attendance/checkin', async (req: Request, res: Response) =>
 });
 
 // ========== GUEST CHECK-OUT ROUTE ==========
-app.post('/api/guest-attendance/checkout-by-name', async (req: Request, res: Response) => {
+app.post('/api/guest-attendance/checkout-by-name', async (req: any, res: any) => {
   try {
     const { name, updatedPurpose } = req.body;
     const now = new Date();
@@ -393,11 +390,7 @@ app.post('/api/guest-attendance/checkout-by-name', async (req: Request, res: Res
       });
     }
     
-    const updateData: {
-      time_out: string;
-      check_out: string;
-      purpose?: string;
-    } = { 
+    const updateData: any = { 
       time_out: currentTime,
       check_out: now.toISOString()
     };
@@ -440,7 +433,7 @@ app.post('/api/guest-attendance/checkout-by-name', async (req: Request, res: Res
 });
 
 // ========== SYSTEM ROUTE ==========
-app.post('/api/system/reset', async (req: Request, res: Response) => {
+app.post('/api/system/reset', async (req: any, res: any) => {
   try {
     await supabase.from('attendance').delete().neq('id', 0);
     await supabase.from('students').delete().neq('id', 0);
@@ -453,7 +446,7 @@ app.post('/api/system/reset', async (req: Request, res: Response) => {
 });
 
 // ========== ADMIN LOGS ROUTES ==========
-app.post('/api/admin/personal-signin', async (req: Request, res: Response) => {
+app.post('/api/admin/personal-signin', async (req: any, res: any) => {
   try {
     const { name } = req.body;
     const generatedUsername = name.toLowerCase().replace(/\s/g, '_');
@@ -496,7 +489,7 @@ app.post('/api/admin/personal-signin', async (req: Request, res: Response) => {
   }
 });
 
-app.put('/api/admin/logout', async (req: Request, res: Response) => {
+app.put('/api/admin/logout', async (req: any, res: any) => {
   try {
     const { username } = req.body;
     const { error } = await supabase
@@ -514,7 +507,7 @@ app.put('/api/admin/logout', async (req: Request, res: Response) => {
   }
 });
 
-app.get('/api/admin/logs', async (req: Request, res: Response) => {
+app.get('/api/admin/logs', async (req: any, res: any) => {
   try {
     const { data, error } = await supabase
       .from('admin_logs')
@@ -531,7 +524,7 @@ app.get('/api/admin/logs', async (req: Request, res: Response) => {
   }
 });
 
-app.delete('/api/admin/logs/:id', async (req: Request, res: Response) => {
+app.delete('/api/admin/logs/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
     const { error } = await supabase.from('admin_logs').delete().eq('id', id);
@@ -544,7 +537,7 @@ app.delete('/api/admin/logs/:id', async (req: Request, res: Response) => {
 });
 
 // ========== ADMIN PROFILE ROUTES ==========
-app.get('/api/admin/profile-by-name/:name', async (req: Request, res: Response) => {
+app.get('/api/admin/profile-by-name/:name', async (req: any, res: any) => {
   try {
     const { name } = req.params;
     const decodedName = decodeURIComponent(name);
@@ -561,7 +554,7 @@ app.get('/api/admin/profile-by-name/:name', async (req: Request, res: Response) 
   }
 });
 
-app.get('/api/admin/profile/:username', async (req: Request, res: Response) => {
+app.get('/api/admin/profile/:username', async (req: any, res: any) => {
   try {
     const { username } = req.params;
     const { data, error } = await supabase
@@ -577,7 +570,7 @@ app.get('/api/admin/profile/:username', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/admin/profile', async (req: Request, res: Response) => {
+app.post('/api/admin/profile', async (req: any, res: any) => {
   try {
     const { username, full_name, contact, email } = req.body;
     const { data, error } = await supabase
@@ -593,7 +586,7 @@ app.post('/api/admin/profile', async (req: Request, res: Response) => {
 });
 
 // ========== ADMIN USER MANAGEMENT ==========
-app.get('/api/admin/users', async (req: Request, res: Response) => {
+app.get('/api/admin/users', async (req: any, res: any) => {
   try {
     const { data, error } = await supabase.from('admin_users').select('*').order('created_at', { ascending: true });
     if (error) throw error;
@@ -604,7 +597,7 @@ app.get('/api/admin/users', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/admin/users', async (req: Request, res: Response) => {
+app.post('/api/admin/users', async (req: any, res: any) => {
   try {
     const { username, password, full_name, contact, email } = req.body;
     const { data, error } = await supabase
@@ -619,7 +612,7 @@ app.post('/api/admin/users', async (req: Request, res: Response) => {
   }
 });
 
-app.delete('/api/admin/users/:username', async (req: Request, res: Response) => {
+app.delete('/api/admin/users/:username', async (req: any, res: any) => {
   try {
     const { username } = req.params;
     const { error } = await supabase.from('admin_users').delete().eq('username', username);
@@ -634,7 +627,7 @@ app.delete('/api/admin/users/:username', async (req: Request, res: Response) => 
 // ========== STATIC FILES & CATCH-ALL ==========
 app.use(express.static(distPath));
 
-app.get('*', (req: Request, res: Response) => {
+app.get('*', (req: any, res: any) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
