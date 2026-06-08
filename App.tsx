@@ -1432,6 +1432,17 @@ export default function App() {
       showMsg('Registration failed', 'error');
     }
   };
+  // AUTO-REFRESH DATA EVERY 10 SECONDS (Only when logged in)
+useEffect(() => {
+  if (!isAuthenticated) return;
+  
+  const interval = setInterval(() => {
+    console.log('🔄 Auto-refreshing data at:', new Date().toLocaleTimeString());
+    fetchData();
+  }, 10000); // 10 seconds
+  
+  return () => clearInterval(interval);
+}, [isAuthenticated]);
 const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-out') => {
   try {
     const reqAction = actionType === 'check-in' ? 'Arrive' : 'Leave';
