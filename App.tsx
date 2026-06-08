@@ -2267,21 +2267,47 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
 
               <div className="md:col-span-3 space-y-6">
                 <div className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl">
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-4">
-                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Users className="w-5 h-5 text-blue-500" />
-                        Student Database
-                      </h2>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <input type="file" ref={fileInputRef} onChange={handleImport} hidden accept=".csv" />
-                      <button onClick={() => fileInputRef.current?.click()} className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
-                        <Upload className="w-3 h-3" /> Import CSV
-                      </button>
-                      <span className="text-xs font-mono text-zinc-600">{students.length} Registered</span>
-                    </div>
-                  </div>
+<div className="flex justify-between items-center mb-6">
+  <div className="flex items-center gap-4">
+    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+      <Users className="w-5 h-5 text-blue-500" />
+      Student Database
+    </h2>
+  </div>
+  <div className="flex items-center gap-3">
+    <input type="file" ref={fileInputRef} onChange={handleImport} hidden accept=".csv" />
+    <button onClick={() => fileInputRef.current?.click()} className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+      <Upload className="w-3 h-3" /> Import CSV
+    </button>
+    <button
+      onClick={async () => {
+        const confirmation = prompt('⚠️ DANGER: This will promote ALL students to the next year.\n\nYear 1 → Year 2\nYear 2 → Year 3\nYear 3 → Year 4\n\n⚠️ Year 4 students will be DELETED permanently!\n\nType "PROMOTE" to confirm:');
+        if (confirmation !== 'PROMOTE') {
+          showMsg('❌ Promotion cancelled - Incorrect confirmation word', 'error');
+          return;
+        }
+        if (window.confirm('⚠️ FINAL WARNING: This action cannot be undone. Are you absolutely sure?')) {
+          try {
+            const res = await fetch('/api/students/promote', { method: 'POST' });
+            if (res.ok) {
+              const result = await res.json();
+              showMsg(`✅ Promoted: ${result.promoted} students | Deleted: ${result.deleted} graduated students`);
+              fetchData();
+            } else {
+              showMsg('Failed to promote students', 'error');
+            }
+          } catch (err) {
+            showMsg('Network error', 'error');
+          }
+        }
+      }}
+      className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+    >
+      <LogIn className="w-3 h-3" /> Promote All Students
+    </button>
+    <span className="text-xs font-mono text-zinc-600">{students.length} Registered</span>
+  </div>
+</div>
 
                   <div className="mb-6 flex flex-wrap gap-4">
                     <div className="flex-1 min-w-[200px] relative">
