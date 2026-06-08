@@ -1908,66 +1908,95 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
   }
 
   // Analytics Helpers
-  const getYearData = () => {
-    const counts: Record<string, number> = {};
-    (attendance || []).forEach(a => {
-      if (a.year) counts[a.year] = (counts[a.year] || 0) + 1;
-    });
-    return Object.entries(counts).map(([name, value]) => ({ name: `Year ${name}`, value }));
-  };
+const getYearData = () => {
+  const counts: Record<string, number> = {};
+  (attendance || []).forEach(a => {
+    if (a.year) {
+      const yearNum = a.year.toString();
+      counts[yearNum] = (counts[yearNum] || 0) + 1;
+    }
+  });
+  if (Object.keys(counts).length === 0) {
+    return [{ name: 'No Data', value: 1 }];
+  }
+  return Object.entries(counts).map(([name, value]) => ({ name: `Year ${name}`, value }));
+};
 
   const getProgrammeData = () => {
-    const counts: Record<string, number> = {};
-    (attendance || []).forEach(a => {
-      if (a.programme) counts[a.programme] = (counts[a.programme] || 0) + 1;
-    });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  };
-
-  const getTrendData = () => {
-    const counts: Record<string, { students: number, guests: number }> = {};
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      counts[dateStr] = { students: 0, guests: 0 };
+  const counts: Record<string, number> = {};
+  (attendance || []).forEach(a => {
+    if (a.programme) {
+      counts[a.programme] = (counts[a.programme] || 0) + 1;
     }
+  });
+  if (Object.keys(counts).length === 0) {
+    return [{ name: 'No Data', value: 1 }];
+  }
+  return Object.entries(counts).slice(0, 6).map(([name, value]) => ({ name, value }));
+};
 
-    (attendance || []).forEach(a => {
-      if (counts[a.date] !== undefined) {
-        counts[a.date].students++;
+  
+
+    const getTrendData = () => {
+  const counts: Record<string, { students: number, guests: number }> = {};
+  
+  // Last 7 days
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    const monthDay = format(new Date(dateStr), 'MMM dd');
+    counts[monthDay] = { students: 0, guests: 0 };
+  }
+
+  (attendance || []).forEach(a => {
+    if (a.date) {
+      const monthDay = format(new Date(a.date), 'MMM dd');
+      if (counts[monthDay]) {
+        counts[monthDay].students++;
       }
-    });
+    }
+  });
 
-    (guests || []).forEach(g => {
-      const dateStr = (g.visit_date || g.createdAt || '').substring(0, 10);
-      if (counts[dateStr] !== undefined) {
-        counts[dateStr].guests++;
+  (guests || []).forEach(g => {
+    const dateStr = (g.visit_date || g.createdAt || '').substring(0, 10);
+    if (dateStr) {
+      const monthDay = format(new Date(dateStr), 'MMM dd');
+      if (counts[monthDay]) {
+        counts[monthDay].guests++;
       }
-    });
+    }
+  });
 
-    return Object.entries(counts).map(([date, data]) => ({
-      name: format(new Date(date), 'MMM dd'),
-      Students: data.students,
-      Guests: data.guests
-    }));
-  };
+  return Object.entries(counts).map(([date, data]) => ({
+    name: date,
+    Students: data.students,
+    Guests: data.guests
+  }));
+};
 
   const getPurposeData = () => {
-    const counts: Record<string, number> = {};
-    (attendance || []).forEach(a => {
-      const purpose = a.purpose?.trim() || 'General Study';
-      counts[purpose] = (counts[purpose] || 0) + 1;
-    });
-    (guests || []).forEach(g => {
-      const purpose = g.purpose?.trim() || 'General Visit';
-      counts[purpose] = (counts[purpose] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([name, value]) => ({ name, value }));
-  };
+  const counts: Record<string, number> = {};
+  
+  (attendance || []).forEach(a => {
+    const purpose = a.purpose?.trim() || 'General Study';
+    counts[purpose] = (counts[purpose] || 0) + 1;
+  });
+  
+  (guests || []).forEach(g => {
+    const purpose = g.purpose?.trim() || 'General Visit';
+    counts[purpose] = (counts[purpose] || 0) + 1;
+  });
+  
+  if (Object.keys(counts).length === 0) {
+    return [{ name: 'No Data Available', value: 1 }];
+  }
+  
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([name, value]) => ({ name: name.length > 15 ? name.substring(0, 12) + '...' : name, value }));
+};
   const getInactiveStudents = () => {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
