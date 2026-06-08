@@ -56,7 +56,7 @@ const Navbar = ({ activeTab, setActiveTab, userRole }: { activeTab: string, setA
       <Building2 className="w-6 h-6 text-emerald-500" />
       <div className="flex items-center gap-3">
         <img
-          src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+          src="/u_mat.png"
           alt="UMaT Logo"
           className="w-10 h-10 object-contain"
         />
@@ -155,7 +155,7 @@ const StudentMode = () => {
 
         <div className="flex flex-col items-center text-center mb-8">
           <img
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            src="/u_mat.png"
             alt="UMaT Logo"
             className="w-16 h-16 object-contain mb-4"
           />
@@ -419,7 +419,7 @@ const GuestKioskMode = () => {
 
         <div className="flex flex-col items-center text-center mb-8">
           <img
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            src="/u_mat.png"
             alt="UMaT Logo"
             className="w-16 h-16 object-contain mb-4"
           />
@@ -642,7 +642,7 @@ const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
         <div className="flex flex-col items-center mb-8">
           <img
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            src="/u_mat.png"
             alt="UMaT Logo"
             className="w-16 h-16 object-contain mb-4"
           />
@@ -768,7 +768,7 @@ const GuestRegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
         <div className="flex flex-col items-center mb-8">
           <img
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            src="/u_mat.png"
             alt="UMaT Logo"
             className="w-16 h-16 object-contain mb-4"
           />
@@ -859,12 +859,12 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole, username: string) =>
     e.preventDefault();
     const user = credentials[username];
     if (user && user.pass === password) {
-
       onLogin(user.role, username);
     } else {
       setError('Invalid username or password');
     }
   };
+  
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
       <motion.div
@@ -873,11 +873,13 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole, username: string) =>
         className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-3xl p-8 shadow-2xl relative"
       >
         <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
+        
+        {/* LOGO FIXED HERE - Image instead of text */}
         <div className="flex flex-col items-center mb-8">
           <img
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/UMa_logo.png/220px-UMa_logo.png"
+            src="/u_mat.png"
             alt="UMaT Logo"
-            className="w-20 h-20 object-contain mb-4 mx-auto"
+            className="w-24 h-24 object-contain mb-4"
           />
           <h1 className="text-2xl font-bold">UMaT-SRID Admin</h1>
           <p className="text-zinc-500 text-sm">Library Management System</p>
@@ -920,7 +922,7 @@ const LoginMode = ({ onLogin }: { onLogin: (role: UserRole, username: string) =>
       </motion.div>
     </div>
   );
-}
+};
 
 const StudentDetailModal = ({
   student,
