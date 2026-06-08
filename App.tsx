@@ -583,7 +583,7 @@ const RegistrationMode = ({ onComplete }: { onComplete: () => void }) => {
   const [formData, setFormData] = useState<Partial<Student>>({
     year: '1',
     programme: 'CE',
-    hall: 'Volta Hall'
+    hall: 'Railway Hall'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -1456,7 +1456,7 @@ export default function App() {
   const [newStudent, setNewStudent] = useState<Partial<Student>>({
     year: '1',
     programme: 'CE',
-    hall: 'Volta Hall'
+    hall: 'Railway Hall'
   });
   const [newGuest, setNewGuest] = useState({
     fullName: '',
