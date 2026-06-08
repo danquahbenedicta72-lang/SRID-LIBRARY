@@ -2813,7 +2813,10 @@ const getYearData = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
                 { title: 'Guest Visits', value: guests.length, icon: Users, color: 'text-purple-500' },
-                { title: 'In-Library', value: (attendance || []).filter(a => !a.checkOut).length, icon: LogIn, color: 'text-blue-500' },
+  { title: 'In-Library', value: (attendance || []).filter(a => {
+  const today = new Date().toISOString().split('T')[0];
+  return !a.checkOut && a.date === today;
+}).length, icon: LogIn, color: 'text-blue-500' },
                 { title: 'Database Size', value: (students || []).length, icon: Users, color: 'text-amber-500' },
               ].map((stat, i) => (
                 <div key={i} className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl flex items-center justify-between shadow-xl">

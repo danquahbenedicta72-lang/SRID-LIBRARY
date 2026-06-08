@@ -190,6 +190,7 @@ app.post('/api/attendance/action', async (req: any, res: any) => {
     const today = new Date().toISOString().split('T')[0];
     
     if (action === 'Arrive') {
+      // Check if already checked in
       const { data: existing } = await supabase
         .from('attendance')
         .select('*')
@@ -202,11 +203,21 @@ app.post('/api/attendance/action', async (req: any, res: any) => {
         return res.json({ success: true, message: 'Already checked in' });
       }
       
+      // Get student's year and programme
+      const { data: student } = await supabase
+        .from('students')
+        .select('year, programme')
+        .eq('refNo', studentRef)
+        .single();
+      
+      // Insert with year and programme
       const { error } = await supabase.from('attendance').insert({
         studentRef,
         date: today,
         checkIn: new Date().toISOString(),
-        purpose: purpose || 'General Study'
+        purpose: purpose || 'General Study',
+        year: student?.year || 'Unknown',
+        programme: student?.programme || 'Unknown'
       });
       
       if (error) throw error;
