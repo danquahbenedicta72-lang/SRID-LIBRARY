@@ -2122,265 +2122,235 @@ const handleAttendance = async (refNo: string, actionType: 'check-in' | 'check-o
     <AttendanceByMonth attendance={attendance} students={students} />
   </motion.div>
 )}
-
         {activeTab === 'students' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid md:grid-cols-5 gap-8"
+            className="space-y-8"
           >
-            <div className="md:col-span-2">
-              <div id="register-form" className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl sticky top-24">
-                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <PlusCircle className="w-5 h-5 text-emerald-500" />
-                  Admin Registration
-                </h2>
-                <form onSubmit={registerStudent} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase text-zinc-500">Ref Number (10 Digits)</label>
-                    <input
-                      required
-                      type="text"
-                      maxLength={10}
-                      value={newStudent.refNo || ''}
-                      onChange={e => setNewStudent({ ...newStudent, refNo: e.target.value.replace(/\D/g, '') })}
-                      placeholder="e.g. 9012593422"
-                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white font-mono"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase text-zinc-500">Full Name</label>
-                    <div className="relative">
-                      <Users className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
-                      <input
-                        required
-                        type="text"
-                        value={newStudent.name || ''}
-                        onChange={e => setNewStudent({ ...newStudent, name: e.target.value })}
-                        placeholder="e.g. Samuel Adjetey"
-                        className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-mono uppercase text-zinc-500">Year</label>
-                      <div className="relative">
-                        <GraduationCap className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
-                        <select
-                          value={newStudent.year}
-                          onChange={e => setNewStudent({ ...newStudent, year: e.target.value })}
-                          className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
-                        >
-                          {YEARS.map(y => <option key={y} value={y}>Year {y}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-mono uppercase text-zinc-500">Programme</label>
-                      <select
-                        value={newStudent.programme}
-                        onChange={e => setNewStudent({ ...newStudent, programme: e.target.value })}
-                        className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
-                      >
-                        {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase text-zinc-500">Contact</label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
-                      <input
-                        required
-                        type="text"
-                        value={newStudent.contact || ''}
-                        onChange={e => setNewStudent({ ...newStudent, contact: e.target.value })}
-                        placeholder="e.g. 0244001122"
-                        className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono uppercase text-zinc-500">Hall / Hostel</label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
-                      <select
-                        value={newStudent.hall}
-                        onChange={e => setNewStudent({ ...newStudent, hall: e.target.value })}
-                        className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white"
-                      >
-                        {HALLS.map(h => <option key={h} value={h}>{h}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
-                  >
-                    <PlusCircle className="w-5 h-5" /> Register Student
-                  </button>
-                </form>
+            {/* ===== MANUAL CHECK-IN PANEL ===== */}
+            <div className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl">
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <LogIn className="w-5 h-5 text-emerald-500" />
+                Manual Check-In / Check-Out
+              </h2>
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-3.5 w-5 h-5 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Search by Reference Number..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all text-white"
+                />
               </div>
-            </div>
 
-            <div className="md:col-span-3 space-y-6">
-              <div className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-4">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Users className="w-5 h-5 text-blue-500" />
-                      Student Database
-                    </h2>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleImport}
-                      hidden
-                      accept=".csv"
-                    />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
-                    >
-                      <Upload className="w-3 h-3" /> Import CSV
-                    </button>
-                   <button
-  onClick={async () => {
-    // Step 1: Ask for confirmation password
-    const confirmation = prompt('⚠️ DANGER: This will promote ALL students to the next year.\n\nYear 1 → Year 2\nYear 2 → Year 3\nYear 3 → Year 4\n\n⚠️ Year 4 students will be DELETED permanently!\n\nType "PROMOTE" to confirm:');
-    
-    if (confirmation !== 'PROMOTE') {
-      showMsg('❌ Promotion cancelled - Incorrect confirmation word', 'error');
-      return;
-    }
-    
-    // Step 2: Final warning
-    if (window.confirm('⚠️ FINAL WARNING: This action cannot be undone. Are you absolutely sure?')) {
-      try {
-        const res = await fetch('/api/students/promote', { method: 'POST' });
-        if (res.ok) {
-          const result = await res.json();
-          showMsg(`✅ Promoted: ${result.promoted} students | Deleted: ${result.deleted} graduated students`);
-          fetchData();
-        } else {
-          showMsg('Failed to promote students', 'error');
-        }
-      } catch (err) {
-        showMsg('Network error', 'error');
-      }
-    } else {
-      showMsg('Promotion cancelled', 'error');
-    }
-  }}
-  className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
->
-  <LogIn className="w-3 h-3" /> Promote All Students
-</button>
-                    <span className="text-xs font-mono text-zinc-600">{students.length} Registered</span>
-                  </div>
-                </div>
-
-                <div className="mb-6 flex flex-wrap gap-4">
-                  <div className="flex-1 min-w-[200px] relative">
-                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
-                    <input
-                      type="text"
-                      placeholder="Search name, ref no, programme..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 text-sm outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                  {PROGRAMMES.map(prog => {
-                    const progStudents = students.filter(s => s.programme === prog);
-                    if (progStudents.length === 0 && !searchTerm) return null;
-
-                    const filteredProgStudents = progStudents.filter(s => {
-                      const query = searchTerm.toLowerCase();
-                      return s.name.toLowerCase().includes(query) || s.refNo.toLowerCase().includes(query);
-                    });
-
-                    if (filteredProgStudents.length === 0 && searchTerm) return null;
+              {searchTerm && (
+                <div className="space-y-4">
+                  {students.filter(s => s.refNo.toLowerCase().includes(searchTerm.toLowerCase())).map(student => {
+                    const today = new Date().toISOString().split('T')[0];
+                    const activeSession = attendance.find(a => a.studentRef === student.refNo && a.date === today && !a.checkOut);
 
                     return (
-                      <div key={prog} className="space-y-2">
-                        <div className="flex items-center gap-2 px-2 py-1 bg-zinc-800/30 rounded-lg border border-[#2a2a2a]">
-                          <BookOpen className="w-4 h-4 text-emerald-500" />
-                          <h3 className="text-sm font-bold text-white">{prog} Department</h3>
-                          <span className="text-[10px] text-zinc-500 font-mono ml-auto">{filteredProgStudents.length} Students</span>
+                      <div key={student.refNo} className="bg-[#1e1e1e] border border-[#2a2a2a] p-4 rounded-xl">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-bold text-white">{student.name}</p>
+                            <p className="text-xs text-zinc-500 font-mono text-emerald-500">{student.refNo}</p>
+                            <p className="text-xs text-zinc-500">{student.programme} • {student.hall}</p>
+                          </div>
+                          <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${activeSession ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                            {activeSession ? 'Inside' : 'Not In'}
+                          </div>
                         </div>
-
-                        <div className="pl-4 space-y-4">
-                          {YEARS.map(year => {
-                            const yearStudents = filteredProgStudents.filter(s => s.year === year);
-                            if (yearStudents.length === 0) return null;
-
-                            return (
-                              <div key={`${prog}-${year}`} className="space-y-2">
-                                <h4 className="text-xs font-mono text-zinc-600 uppercase tracking-widest px-2">Year {year}</h4>
-                                <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl overflow-hidden">
-                                  <table className="w-full text-left">
-                                    <tbody className="text-sm divide-y divide-[#2a2a2a]">
-                                      {yearStudents.map(s => (
-                                        <tr
-                                          key={s.refNo}
-                                          onClick={() => setSelectedStudent(s)}
-                                          className={`hover:bg-zinc-800/30 transition-colors group cursor-pointer ${deletingRef === s.refNo ? 'opacity-50 pointer-events-none' : ''}`}
-                                        >
-                                          <td className="py-2.5 px-4 font-mono text-emerald-500 w-32">{s.refNo}</td>
-                                          <td className="py-2.5 px-4 text-white font-medium">{s.name}</td>
-                                          <td className="py-2.5 px-4 hidden md:table-cell text-zinc-500">{s.hall}</td>
-                                          <td className="py-2.5 px-4 w-24">
-                                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${s.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                                              }`}>
-                                              {s.status}
-                                            </span>
-                                          </td>
-                                          <td className="py-2.5 px-4 text-right w-16">
-                                            {userRole === 'SUPER_ADMIN' && (
-                                              <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  if (window.confirm('IRREVERSIBLE: Delete student and their attendance history permanently?')) deleteStudent(s.refNo);
-                                                }}
-                                                className={`${deletingRef === s.refNo ? 'text-zinc-700 animate-pulse' : 'text-zinc-600 hover:text-red-500'} transition-colors p-1`}
-                                                title="Delete Student Permanently"
-                                                disabled={deletingRef === s.refNo}
-                                              >
-                                                {deletingRef === s.refNo ? (
-                                                  <Clock className="w-3 h-3 animate-spin" />
-                                                ) : (
-                                                  <Trash2 className="w-3 h-3" />
-                                                )}
-                                              </button>
-                                            )}
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            );
-                          })}
+                        <div className="flex gap-2">
+                          {!activeSession ? (
+                            <div className="w-full space-y-2">
+                              <input
+                                type="text"
+                                placeholder="Book / Purpose"
+                                value={purpose}
+                                onChange={(e) => setPurpose(e.target.value)}
+                                className="w-full bg-[#141414] border border-[#2a2a2a] rounded-lg py-2 px-3 text-xs outline-none focus:ring-1 focus:ring-emerald-500"
+                              />
+                              <button
+                                onClick={() => handleAttendance(student.refNo, 'check-in')}
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-sm"
+                              >
+                                <LogIn className="w-4 h-4" /> Check In
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleAttendance(student.refNo, 'check-out')}
+                              className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium text-sm"
+                            >
+                              <LogOut className="w-4 h-4" /> Check Out
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
                   })}
-
-                  {students.length === 0 && (
-                    <div className="text-center py-20 bg-[#1e1e1e] rounded-3xl border border-dashed border-[#2a2a2a]">
-                      <Users className="w-16 h-16 text-zinc-800 mx-auto mb-4" />
-                      <p className="text-zinc-500">The database is currently empty.</p>
-                      <p className="text-zinc-700 text-xs mt-1">Register students manually or import via CSV.</p>
+                  {students.filter(s => s.refNo.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                    <div className="text-center py-8">
+                      <Users className="w-12 h-12 text-zinc-700 mx-auto mb-2" />
+                      <p className="text-zinc-500 text-sm">No student found matching "{searchTerm}"</p>
+                      <button onClick={() => setSearchTerm('')} className="mt-4 text-emerald-500 hover:underline text-sm font-medium">
+                        Clear Search
+                      </button>
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+
+            {/* ===== REGISTRATION FORM & STUDENT LIST ===== */}
+            <div className="grid md:grid-cols-5 gap-8">
+              <div className="md:col-span-2">
+                <div id="register-form" className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl sticky top-24">
+                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <PlusCircle className="w-5 h-5 text-emerald-500" />
+                    Admin Registration
+                  </h2>
+                  <form onSubmit={registerStudent} className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-mono uppercase text-zinc-500">Ref Number (10 Digits)</label>
+                      <input required type="text" maxLength={10} value={newStudent.refNo || ''} onChange={e => setNewStudent({ ...newStudent, refNo: e.target.value.replace(/\D/g, '') })} placeholder="e.g. 9012593422" className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white font-mono" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-mono uppercase text-zinc-500">Full Name</label>
+                      <div className="relative">
+                        <Users className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
+                        <input required type="text" value={newStudent.name || ''} onChange={e => setNewStudent({ ...newStudent, name: e.target.value })} placeholder="e.g. Samuel Adjetey" className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-mono uppercase text-zinc-500">Year</label>
+                        <div className="relative">
+                          <GraduationCap className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
+                          <select value={newStudent.year} onChange={e => setNewStudent({ ...newStudent, year: e.target.value })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white">
+                            {YEARS.map(y => <option key={y} value={y}>Year {y}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-mono uppercase text-zinc-500">Programme</label>
+                        <select value={newStudent.programme} onChange={e => setNewStudent({ ...newStudent, programme: e.target.value })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white">
+                          {PROGRAMMES.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-mono uppercase text-zinc-500">Contact</label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
+                        <input required type="text" value={newStudent.contact || ''} onChange={e => setNewStudent({ ...newStudent, contact: e.target.value })} placeholder="e.g. 0244001122" className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white" />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-mono uppercase text-zinc-500">Hall / Hostel</label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-2.5 w-4 h-4 text-zinc-600" />
+                        <select value={newStudent.hall} onChange={e => setNewStudent({ ...newStudent, hall: e.target.value })} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-white">
+                          {HALLS.map(h => <option key={h} value={h}>{h}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-900/20 active:scale-95">
+                      <PlusCircle className="w-5 h-5" /> Register Student
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <div className="md:col-span-3 space-y-6">
+                <div className="bg-[#141414] border border-[#2a2a2a] p-6 rounded-2xl shadow-xl">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-4">
+                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        <Users className="w-5 h-5 text-blue-500" />
+                        Student Database
+                      </h2>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input type="file" ref={fileInputRef} onChange={handleImport} hidden accept=".csv" />
+                      <button onClick={() => fileInputRef.current?.click()} className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+                        <Upload className="w-3 h-3" /> Import CSV
+                      </button>
+                      <span className="text-xs font-mono text-zinc-600">{students.length} Registered</span>
+                    </div>
+                  </div>
+
+                  <div className="mb-6 flex flex-wrap gap-4">
+                    <div className="flex-1 min-w-[200px] relative">
+                      <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />
+                      <input type="text" placeholder="Search name, ref no, programme..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 pl-10 pr-4 text-sm outline-none focus:ring-1 focus:ring-emerald-500" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                    {PROGRAMMES.map(prog => {
+                      const progStudents = students.filter(s => s.programme === prog);
+                      if (progStudents.length === 0 && !searchTerm) return null;
+                      const filteredProgStudents = progStudents.filter(s => {
+                        const query = searchTerm.toLowerCase();
+                        return s.name.toLowerCase().includes(query) || s.refNo.toLowerCase().includes(query);
+                      });
+                      if (filteredProgStudents.length === 0 && searchTerm) return null;
+                      return (
+                        <div key={prog} className="space-y-2">
+                          <div className="flex items-center gap-2 px-2 py-1 bg-zinc-800/30 rounded-lg border border-[#2a2a2a]">
+                            <BookOpen className="w-4 h-4 text-emerald-500" />
+                            <h3 className="text-sm font-bold text-white">{prog} Department</h3>
+                            <span className="text-[10px] text-zinc-500 font-mono ml-auto">{filteredProgStudents.length} Students</span>
+                          </div>
+                          <div className="pl-4 space-y-4">
+                            {YEARS.map(year => {
+                              const yearStudents = filteredProgStudents.filter(s => s.year === year);
+                              if (yearStudents.length === 0) return null;
+                              return (
+                                <div key={`${prog}-${year}`} className="space-y-2">
+                                  <h4 className="text-xs font-mono text-zinc-600 uppercase tracking-widest px-2">Year {year}</h4>
+                                  <div className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl overflow-hidden">
+                                    <table className="w-full text-left">
+                                      <tbody className="text-sm divide-y divide-[#2a2a2a]">
+                                        {yearStudents.map(s => (
+                                          <tr key={s.refNo} onClick={() => setSelectedStudent(s)} className="hover:bg-zinc-800/30 transition-colors group cursor-pointer">
+                                            <td className="py-2.5 px-4 font-mono text-emerald-500 w-32">{s.refNo}</td>
+                                            <td className="py-2.5 px-4 text-white font-medium">{s.name}</td>
+                                            <td className="py-2.5 px-4 hidden md:table-cell text-zinc-500">{s.hall}</td>
+                                            <td className="py-2.5 px-4 w-24">
+                                              <span className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase bg-emerald-500/10 text-emerald-500">{s.status}</span>
+                                            </td>
+                                            {userRole === 'SUPER_ADMIN' && (
+                                              <td className="py-2.5 px-4 text-right w-16">
+                                                <button onClick={(e) => { e.stopPropagation(); if (window.confirm('Delete student permanently?')) deleteStudent(s.refNo); }} className="text-zinc-600 hover:text-red-500 transition-colors p-1">
+                                                  <Trash2 className="w-3 h-3" />
+                                                </button>
+                                              </td>
+                                            )}
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {students.length === 0 && (
+                      <div className="text-center py-20 bg-[#1e1e1e] rounded-3xl border border-dashed border-[#2a2a2a]">
+                        <Users className="w-16 h-16 text-zinc-800 mx-auto mb-4" />
+                        <p className="text-zinc-500">The database is currently empty.</p>
+                        <p className="text-zinc-700 text-xs mt-1">Register students manually or import via CSV.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
