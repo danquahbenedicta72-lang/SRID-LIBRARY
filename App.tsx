@@ -1354,6 +1354,7 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
     </div>
   );
 };
+
 // Admin Registration Modal Component
 const AdminRegistrationModal = ({ isOpen, onRegister, onClose }: {
   isOpen: boolean,
