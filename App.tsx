@@ -1258,10 +1258,10 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
   });
 
   Object.keys(groupedData).forEach(month => {
-    Object.keys(groupedData[month]).forEach(week => {
-      groupedData[month][week].days.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    });
+  Object.keys(groupedData[month]).forEach(week => {
+    groupedData[month][week].days.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
+});
 
   return (
     <div className="space-y-8">
@@ -1453,6 +1453,15 @@ export default function App() {
 
  const [view, setView] = useState<'admin' | 'scan' | 'register' | 'guest-kiosk' | 'guest-registration'>('admin');
 
+// ✅ ADD THESE 3 LINES RIGHT HERE
+const [exportFilter, setExportFilter] = useState<'daily' | 'weekly'>('daily');
+const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+const [selectedWeek, setSelectedWeek] = useState<string>(() => {
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+  return startOfWeek.toISOString().split('T')[0];
+});
   const [newStudent, setNewStudent] = useState<Partial<Student>>({
     year: '1',
     programme: 'CE',
@@ -1997,6 +2006,54 @@ const getYearData = () => {
     .slice(0, 10)
     .map(([name, value]) => ({ name: name.length > 15 ? name.substring(0, 12) + '...' : name, value }));
 };
+  // ========== EXPORT ATTENDANCE BY DAY OR WEEK ==========
+  const exportAttendance = () => {
+    let filteredAttendance: any[] = [];
+    let fileName = '';
+    
+    if (exportFilter === 'daily') {
+      // Filter by selected date
+      filteredAttendance = attendance.filter(a => a.date === selectedDate);
+      fileName = `attendance_${selectedDate}.csv`;
+    } else {
+      // Filter by selected week (Monday to Sunday)
+      const startDate = new Date(selectedWeek);
+      const dayOfWeek = startDate.getDay();
+      const monday = new Date(startDate);
+      monday.setDate(startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      
+      filteredAttendance = attendance.filter(a => {
+        const recordDate = new Date(a.date);
+        return recordDate >= monday && recordDate <= sunday;
+      });
+      
+      const formatDate = (d: Date) => `${d.getMonth()+1}/${d.getDate()}`;
+      fileName = `attendance_${formatDate(monday)}_to_${formatDate(sunday)}.csv`;
+    }
+    
+    if (filteredAttendance.length === 0) {
+      showMsg('No attendance records found for selected period', 'error');
+      return;
+    }
+    
+    // Create CSV
+    const csvHeader = "Student Name,Ref No,Date,Day,Time In,Time Out,Purpose\n";
+    const csvRows = filteredAttendance.map(a => {
+      const date = new Date(a.date);
+      const dayName = date.toLocaleString('default', { weekday: 'long' });
+      return `"${a.name}","${a.studentRef}","${a.date}","${dayName}","${a.checkIn}","${a.checkOut || ''}","${a.purpose || ''}"`;
+    }).join("\n");
+    
+    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.click();
+    showMsg(`Exported ${filteredAttendance.length} records`);
+  };
   const getInactiveStudents = () => {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
@@ -2121,31 +2178,63 @@ const getYearData = () => {
     animate={{ opacity: 1, x: 0 }}
     className="space-y-6"
   >
-    <div className="flex justify-between items-center">
-      <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-        <Calendar className="w-6 h-6 text-emerald-500" />
-        Attendance by Month & Week
-      </h2>
-      <button
-        onClick={() => {
-          const csvHeader = "Student,Ref No,Date,Day,Time In,Time Out,Purpose\n";
-          const csvRows = attendance.map(a => {
-            const date = new Date(a.date);
-            const dayName = date.toLocaleString('default', { weekday: 'long' });
-            return `"${a.name}","${a.studentRef}","${a.date}","${dayName}","${a.checkIn}","${a.checkOut || ''}","${a.purpose || ''}"`;
-          }).join("\n");
-          const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.setAttribute('href', url);
-          a.setAttribute('download', `attendance_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-          a.click();
-          showMsg('CSV Exported successfully');
-        }}
-        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
-      >
-        <Download className="w-4 h-4" /> Export CSV
-      </button>
+    {/* Header with Export Controls */}
+    <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4">
+      <div className="flex flex-wrap justify-between items-center gap-4">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <Calendar className="w-6 h-6 text-emerald-500" />
+          Attendance by Month & Week
+        </h2>
+        
+        {/* Export Controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-[#1e1e1e] rounded-lg p-1">
+            <button
+              onClick={() => setExportFilter('daily')}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                exportFilter === 'daily' 
+                  ? 'bg-emerald-600 text-white' 
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Daily
+            </button>
+            <button
+              onClick={() => setExportFilter('weekly')}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                exportFilter === 'weekly' 
+                  ? 'bg-emerald-600 text-white' 
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Weekly
+            </button>
+          </div>
+          
+          {exportFilter === 'daily' ? (
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-3 text-sm text-white focus:ring-1 focus:ring-emerald-500 outline-none"
+            />
+          ) : (
+            <input
+              type="week"
+              value={selectedWeek}
+              onChange={(e) => setSelectedWeek(e.target.value)}
+              className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg py-2 px-3 text-sm text-white focus:ring-1 focus:ring-emerald-500 outline-none"
+            />
+          )}
+          
+          <button
+            onClick={exportAttendance}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all"
+          >
+            <Download className="w-4 h-4" /> Export
+          </button>
+        </div>
+      </div>
     </div>
     
     <AttendanceByMonth attendance={attendance} students={students} />
