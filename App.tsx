@@ -1246,22 +1246,21 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
       dayExists = groupedData[month][weekKey].days.find(d => d.date === dateStr);
     }
     
-    // Get student name
     const student = students.find(s => s.refNo === record.studentRef);
     const studentName = student?.name || 'Unknown';
     
-    // Add studentName to the record for display
     dayExists!.records.push({
       ...record,
       studentName: studentName
     });
   });
 
+  // Sort days within each week (newest first)
   Object.keys(groupedData).forEach(month => {
-  Object.keys(groupedData[month]).forEach(week => {
-    groupedData[month][week].days.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    Object.keys(groupedData[month]).forEach(week => {
+      groupedData[month][week].days.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
   });
-});
 
   return (
     <div className="space-y-8">
@@ -1275,7 +1274,12 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
           </div>
           
           <div className="divide-y divide-[#2a2a2a]">
-            {Object.keys(groupedData[month]).map(week => {
+            {/* SORT WEEKS: Newest week first (Week 24 before Week 23) */}
+            {Object.keys(groupedData[month]).sort((a, b) => {
+              const weekNumA = parseInt(a.split(' ')[1]);
+              const weekNumB = parseInt(b.split(' ')[1]);
+              return weekNumB - weekNumA;
+            }).map(week => {
               const weekData = groupedData[month][week];
               const totalVisits = weekData.days.reduce((sum, day) => sum + day.records.length, 0);
               
