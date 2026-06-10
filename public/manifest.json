@@ -1,0 +1,52 @@
+{
+  "name": "UMaT-SRID Library Management System",
+  "short_name": "Library System",
+  "description": "Library Management System for UMaT-SRID",
+  "start_url": "/#admin",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#10b981",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/u_mat.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/u_mat.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/u_mat.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/u_mat.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/u_mat.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/u_mat.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/u_mat.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/u_mat.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
