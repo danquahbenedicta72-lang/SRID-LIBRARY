@@ -1476,7 +1476,8 @@ export default function App() {
   const [adminProfile, setAdminProfile] = useState<any>(null);
 
  const [view, setView] = useState<'admin' | 'scan' | 'register' | 'guest-kiosk' | 'guest-registration'>('admin');
-
+const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+const [showInstallButton, setShowInstallButton] = useState(false);
 // ✅ ADD THESE 3 LINES RIGHT HERE
 const [exportFilter, setExportFilter] = useState<'daily' | 'weekly'>('daily');
 const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -1593,6 +1594,18 @@ const [selectedWeek, setSelectedWeek] = useState<string>(() => {
   window.addEventListener('hashchange', updateView);
   return () => window.removeEventListener('hashchange', updateView);
 }, []);
+  // PWA Install Prompt
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    };
+    
+    window.addEventListener('beforeinstallprompt', handler);
+    
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
   // Auto-show personal sign in modal when dashboard loads
   useEffect(() => {
     if (isAuthenticated && !isPersonalSignedIn && !showNameModal) {
@@ -2078,6 +2091,22 @@ const getYearData = () => {
     link.click();
     showMsg(`Exported ${filteredAttendance.length} records`);
   };
+    // PWA Install Function
+  const handleInstallClick = () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    
+    deferredPrompt.userChoice.then((result: any) => {
+      if (result.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      setDeferredPrompt(null);
+      setShowInstallButton(false);
+    });
+  };
   const getInactiveStudents = () => {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
@@ -2122,6 +2151,17 @@ const getYearData = () => {
               </button>
             </div>
           )}
+          
+          {/* Install App Button */}
+          {showInstallButton && (
+            <button
+              onClick={handleInstallClick}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" /> Install App
+            </button>
+          )}
+          
           {/* Main Dashboard Exit Button */}
           <button
             onClick={async () => {
@@ -2143,6 +2183,8 @@ const getYearData = () => {
             className="bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-lg text-sm font-bold"
           >
             Exit Dashboard
+
+
           </button>
         </div>
       )}
