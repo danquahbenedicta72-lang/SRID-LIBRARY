@@ -1193,7 +1193,11 @@ const PersonalSignInModal = ({ isOpen, onSignIn, onClose }: { isOpen: boolean, o
   );
 };
 // ========== ATTENDANCE BY MONTH & WEEK COMPONENT ==========
-const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRecord[], students: Student[] }) => {
+const AttendanceByMonth = ({ attendance, students, selectedDate }: { 
+  attendance: AttendanceRecord[], 
+  students: Student[],
+  selectedDate: string | null 
+}) => {
   const getWeekNumber = (date: Date): number => {
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
     const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
@@ -1210,6 +1214,12 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
     return `${formatDate(start)} - ${formatDate(end)}`;
   };
 
+  // Filter attendance by selected date if one is chosen
+  let filteredAttendance = attendance;
+  if (selectedDate) {
+    filteredAttendance = attendance.filter(record => record.date === selectedDate);
+  }
+
   const groupedData: {
     [month: string]: {
       [week: string]: {
@@ -1223,7 +1233,7 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
     };
   } = {};
 
-  attendance.forEach(record => {
+  filteredAttendance.forEach(record => {
     const date = new Date(record.date);
     const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
     const weekKey = `Week ${getWeekNumber(date)}`;
@@ -1264,6 +1274,14 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
 
   return (
     <div className="space-y-8">
+      {selectedDate && (
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-center">
+          <p className="text-emerald-400 text-sm">
+            Showing attendance for: <strong>{selectedDate}</strong>
+          </p>
+        </div>
+      )}
+      
       {Object.keys(groupedData).map(month => (
         <div key={month} className="bg-[#141414] border border-[#2a2a2a] rounded-2xl overflow-hidden">
           <div className="bg-emerald-600/20 px-6 py-4 border-b border-[#2a2a2a]">
@@ -1274,7 +1292,6 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
           </div>
           
           <div className="divide-y divide-[#2a2a2a]">
-            {/* SORT WEEKS: Newest week first (Week 24 before Week 23) */}
             {Object.keys(groupedData[month]).sort((a, b) => {
               const weekNumA = parseInt(a.split(' ')[1]);
               const weekNumB = parseInt(b.split(' ')[1]);
@@ -1352,7 +1369,9 @@ const AttendanceByMonth = ({ attendance, students }: { attendance: AttendanceRec
       {Object.keys(groupedData).length === 0 && (
         <div className="text-center py-12 bg-[#141414] rounded-2xl border border-[#2a2a2a]">
           <Calendar className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
-          <p className="text-zinc-500">No attendance records found</p>
+          <p className="text-zinc-500">
+            {selectedDate ? `No attendance records found for ${selectedDate}` : 'No attendance records found'}
+          </p>
         </div>
       )}
     </div>
@@ -2242,7 +2261,11 @@ const getYearData = () => {
       </div>
     </div>
     
-    <AttendanceByMonth attendance={attendance} students={students} />
+    <AttendanceByMonth 
+      attendance={attendance} 
+      students={students} 
+      selectedDate={exportFilter === 'daily' ? selectedDate : null}
+    />
   </motion.div>
 )}
         {activeTab === 'students' && (
