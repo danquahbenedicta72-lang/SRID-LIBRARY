@@ -1,6 +1,6 @@
 {
   "name": "UMaT-SRID Library Management System",
-  "short_name": "Library System",
+  "short_name": "UMaT Library",
   "description": "Library Management System for UMaT-SRID",
   "start_url": "/#admin",
   "display": "standalone",
