@@ -1,10 +1,9 @@
 // Simple Service Worker for PWA
-const CACHE_NAME = 'library-system-v1';
+const CACHE_NAME = 'library-system-v2';
 
 // Files to cache (only essential ones)
 const urlsToCache = [
-  '/',
-  '/index.html',
+  
   '/u_mat.png'
 ];
 
