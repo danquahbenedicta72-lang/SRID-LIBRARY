@@ -51,7 +51,6 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const distPath = path.join(process.cwd(), 'dist');
-app.use(express.static(distPath));
 
 // ========== GUEST ROUTE ==========
 app.get('/guest', (req: any, res: any) => {
@@ -636,9 +635,24 @@ app.delete('/api/admin/users/:username', async (req: any, res: any) => {
 });
 
 // ========== STATIC FILES & CATCH-ALL ==========
-app.use(express.static(distPath));
+app.use(express.static(distPath, {
+  // Don't cache index.html, but cache hashed assets
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (path.includes('/assets/')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
 
+// Catch-all: only serve index.html for non-asset, non-API routes
 app.get('*', (req: any, res: any) => {
+  // If it's an asset request that got this far, it doesn't exist — return real 404
+  if (req.path.startsWith('/assets/') || req.path.startsWith('/api/')) {
+    return res.status(404).send('Not found');
+  }
+  // Otherwise, serve index.html (SPA fallback)
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
